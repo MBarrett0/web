@@ -18,7 +18,7 @@ import { copy } from '../data/copy';
           <ul>
             {p.includes.map((inc) => <li>{inc}</li>)}
           </ul>
-          <a class="btn btn-ghost" href="#contacto" data-plan={p.service}>{copy.plans.cta}</a>
+          <a class="btn btn-ghost" href="#contacto" data-plan={p.service} aria-label={`${copy.plans.cta}: ${p.name}`}>{copy.plans.cta}</a>
         </article>
       ))}
     </div>

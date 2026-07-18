@@ -1,7 +1,4 @@
-.l3d-section { overflow: hidden; }
-.l3d-layout { display: flex; gap: clamp(2rem, 5vw, 4rem); align-items: center; flex-wrap: wrap; }
-.l3d-side { flex: 1 1 22rem; }
-.l3d-stage { flex: 1 1 24rem; height: min(60vh, 30rem); min-height: 20rem; position: relative; }
+.l3d-stage { width: 100%; height: 100%; position: relative; }
 .l3d-mini { width: 340px; background: #0d0f17; border-radius: 6px; overflow: hidden; font-family: var(--font); }
 .l3d-mini .m-nav { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-bottom: 1px solid #1d2133; font-size: 11px; font-weight: 700; }
 .l3d-mini .m-nav i { width: 44px; height: 14px; border-radius: 3px; background: #f2f3f8; }

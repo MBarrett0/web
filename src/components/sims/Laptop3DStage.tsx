@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { RoundedBox, Html, ContactShadows, PerformanceMonitor } from '@react-three/drei';
 import type { Group } from 'three';
+import { prefersReducedMotion } from '../../lib/gsap';
 import './laptop3d.css';
 
 function supportsWebGL(): boolean {
@@ -14,6 +15,7 @@ function supportsWebGL(): boolean {
 }
 
 function MiniSite() {
+  // COPY — editable
   return (
     <div className="l3d-mini">
       <div className="m-nav"><span>TU&nbsp;NEGOCIO</span><i /></div>
@@ -32,6 +34,7 @@ function LaptopModel() {
   const target = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
+    if (prefersReducedMotion()) return;
     const isTouch = window.matchMedia('(pointer: coarse)').matches;
     if (!isTouch) {
       const onMove = (e: PointerEvent) => {
@@ -76,7 +79,7 @@ function LaptopModel() {
   );
 }
 
-export default function Laptop3D() {
+export default function Laptop3DStage() {
   const [webgl] = useState(supportsWebGL);
   const [active, setActive] = useState(false);
   const [dpr, setDpr] = useState(() => Math.min(window.devicePixelRatio || 1, 2));
@@ -90,34 +93,19 @@ export default function Laptop3D() {
   }, []);
 
   return (
-    <section id="web" className="l3d-section">
-      <div className="container l3d-layout">
-        <div className="l3d-side">
-          <p className="kicker">Creación de páginas web</p>
-          <h2>Una web que trabaja, no que decora.</h2>
-          <p style={{ color: 'var(--muted)', marginTop: '0.8rem', maxWidth: '32rem' }}>
-            Rápida, clara y pensada para que el que entra te escriba. Como esta que estás mirando — movete y fijate cómo responde.
-          </p>
-          <p className="micro-cta">
-            ¿Tu negocio todavía no tiene web (o tiene una que no ayuda)?{' '}
-            <a href="#contacto">Contame tu caso →</a>
-          </p>
-        </div>
-        <div ref={stage} className="l3d-stage">
-          {webgl ? (
-            <Canvas frameloop={active ? 'always' : 'never'} dpr={dpr} camera={{ position: [0, 0.7, 4.2], fov: 35 }}>
-              <PerformanceMonitor onDecline={() => setDpr(1)}>
-                <ambientLight intensity={0.75} />
-                <directionalLight position={[2.5, 4, 3]} intensity={1.3} />
-                <LaptopModel />
-                <ContactShadows position={[0, -0.42, 0.3]} opacity={0.45} blur={2.4} far={2.5} resolution={256} />
-              </PerformanceMonitor>
-            </Canvas>
-          ) : (
-            <div className="l3d-fallback"><MiniSite /></div>
-          )}
-        </div>
-      </div>
-    </section>
+    <div ref={stage} className="l3d-stage">
+      {webgl ? (
+        <Canvas frameloop={active ? 'always' : 'never'} dpr={dpr} camera={{ position: [0, 0.7, 4.2], fov: 35 }}>
+          <PerformanceMonitor onDecline={() => setDpr(1)}>
+            <ambientLight intensity={0.75} />
+            <directionalLight position={[2.5, 4, 3]} intensity={1.3} />
+            <LaptopModel />
+            <ContactShadows position={[0, -0.42, 0.3]} opacity={0.45} blur={2.4} far={2.5} resolution={256} />
+          </PerformanceMonitor>
+        </Canvas>
+      ) : (
+        <div className="l3d-fallback"><MiniSite /></div>
+      )}
+    </div>
   );
 }
