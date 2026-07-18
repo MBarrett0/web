@@ -1,0 +1,16 @@
+---
+import { copy } from '../data/copy';
+---
+<footer>
+  <div class="container row">
+    <span class="logo">{copy.brand}<span class="star">*</span></span>
+    <p>{copy.footer.note}</p>
+  </div>
+</footer>
+<style>
+  footer { border-top: 1px solid var(--line); padding-block: 2rem; }
+  .row { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between; align-items: center; }
+  .logo { font-weight: 900; }
+  .star { color: var(--accent); }
+  p { color: var(--muted); font-size: 0.9rem; }
+</style>
