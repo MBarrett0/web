@@ -1,0 +1,43 @@
+---
+import { copy } from '../data/copy';
+---
+<section id="planes">
+  <div class="container">
+    <div class="section-head" data-reveal>
+      <p class="kicker">Planes</p>
+      <h2>{copy.plans.title}</h2>
+      <p>{copy.plans.sub}</p>
+    </div>
+    <div class="rows">
+      {copy.plans.items.map((p, i) => (
+        <article class="plan" style={`--i:${i}`} data-reveal>
+          <div class="head">
+            <h3>{p.name}</h3>
+            <p class="who">{p.who}</p>
+          </div>
+          <ul>
+            {p.includes.map((inc) => <li>{inc}</li>)}
+          </ul>
+          <a class="btn btn-ghost" href="#contacto" data-plan={p.service}>{copy.plans.cta}</a>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+<style>
+  .rows { display: flex; flex-direction: column; }
+  .plan {
+    display: flex; flex-wrap: wrap; gap: 1rem 3rem; align-items: flex-start;
+    border-top: 1px solid var(--line); padding-block: clamp(1.6rem, 4vh, 2.4rem);
+    margin-left: calc(var(--i) * clamp(0rem, 2.5vw, 2.8rem));
+  }
+  .plan:last-child { border-bottom: 1px solid var(--line); }
+  .head { flex: 1 1 16rem; }
+  h3 { font-size: clamp(1.4rem, 3vw, 1.8rem); }
+  .who { color: var(--muted); margin-top: 0.4rem; max-width: 26rem; }
+  ul { flex: 1 1 16rem; list-style: none; padding: 0; margin: 0; }
+  li { padding-left: 1.3rem; position: relative; margin-top: 0.4rem; color: var(--muted); font-size: 0.95rem; }
+  li::before { content: '—'; position: absolute; left: 0; color: var(--accent); }
+  .btn { align-self: center; }
+  @media (max-width: 640px) { .plan { margin-left: 0; } }
+</style>

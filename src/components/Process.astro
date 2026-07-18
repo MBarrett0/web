@@ -1,0 +1,40 @@
+---
+import { copy } from '../data/copy';
+---
+<section id="proceso">
+  <div class="container">
+    <div class="section-head" data-reveal>
+      <p class="kicker">Proceso</p>
+      <h2>{copy.process.title}</h2>
+      <p>{copy.process.sub}</p>
+    </div>
+    <ol class="steps">
+      {copy.process.steps.map((s, i) => (
+        <li class="step" data-reveal data-reveal-delay={String(i * 0.08)}>
+          <span class="n">{i + 1}</span>
+          <div>
+            <h3>{s.t}</h3>
+            <p><strong>Vos:</strong> {s.you}</p>
+            <p><strong>Yo:</strong> {s.me}</p>
+          </div>
+        </li>
+      ))}
+    </ol>
+  </div>
+</section>
+<style>
+  .steps { list-style: none; padding: 0; position: relative; max-width: 40rem; }
+  .steps::before {
+    content: ''; position: absolute; left: 1.05rem; top: 1rem; bottom: 1rem;
+    width: 1px; background: var(--line);
+  }
+  .step { display: flex; gap: 1.4rem; padding-block: 1.2rem; position: relative; }
+  .n {
+    flex: none; width: 2.1rem; height: 2.1rem; border-radius: 50%;
+    background: var(--surface); border: 1px solid var(--accent);
+    display: grid; place-items: center; font-weight: 700; font-size: 0.9rem; z-index: 1;
+  }
+  h3 { font-size: 1.2rem; margin-bottom: 0.4rem; }
+  .step p { color: var(--muted); font-size: 0.95rem; margin-top: 0.2rem; }
+  .step strong { color: var(--text); font-weight: 600; }
+</style>
