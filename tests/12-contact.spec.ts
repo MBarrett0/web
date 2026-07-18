@@ -1,12 +1,14 @@
 import { test, expect } from '@playwright/test';
 
 test('contacto: validación nativa bloquea el envío vacío', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/web/');
   await page.locator('#contacto button[type=submit]').click();
   await expect(page.locator('#contact-form input[name=name]:invalid')).toBeAttached();
 });
 
 test('contacto: el CTA de un plan precarga el servicio', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/web/');
   const planLink = page.locator('#planes a[data-plan]').first();
   const planValue = await planLink.getAttribute('data-plan');
@@ -15,6 +17,7 @@ test('contacto: el CTA de un plan precarga el servicio', async ({ page }) => {
 });
 
 test('contacto: error de red muestra mensaje sin perder lo tipeado', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.route('**/api.web3forms.com/**', (r) => r.abort());
   await page.goto('/web/');
   await page.fill('#contact-form input[name=name]', 'Ana');

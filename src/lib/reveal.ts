@@ -6,7 +6,7 @@ export function initReveals(): void {
   document.querySelectorAll<HTMLElement>('[data-reveal]').forEach((el) => {
     gsap.from(el, {
       y: 28,
-      opacity: 0,
+      autoAlpha: 0,
       duration: 0.9,
       delay: Number(el.dataset.revealDelay ?? 0),
       ease: 'power3.out',
