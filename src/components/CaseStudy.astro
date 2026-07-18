@@ -1,0 +1,38 @@
+---
+import { getCollection, render } from 'astro:content';
+const cases = await Promise.all(
+  (await getCollection('cases')).map(async (c) => ({ data: c.data, Content: (await render(c)).Content })),
+);
+---
+<section id="caso">
+  <div class="container">
+    <div class="section-head" data-reveal>
+      <p class="kicker">Caso real</p>
+      <h2>Hecho y funcionando.</h2>
+    </div>
+    {cases.map(({ data, Content }) => (
+      <article class="case" data-reveal>
+        <p class="sector">{data.sector}</p>
+        <h3>{data.title}</h3>
+        <p class="summary">{data.summary}</p>
+        <div class="body"><Content /></div>
+        <ul class="results">
+          {data.results.map((r) => <li>{r}</li>)}
+        </ul>
+        <a class="btn btn-ghost" href={data.url} target="_blank" rel="noopener noreferrer">
+          Ver el sitio en vivo →
+        </a>
+      </article>
+    ))}
+  </div>
+</section>
+<style>
+  .case { border-left: 3px solid var(--accent); padding-left: clamp(1.2rem, 4vw, 2.5rem); max-width: 44rem; }
+  .sector { color: var(--muted); font-size: 0.88rem; }
+  h3 { font-size: clamp(1.5rem, 3.5vw, 2.2rem); margin-top: 0.3rem; }
+  .summary { margin-top: 0.7rem; font-size: 1.05rem; }
+  .body { color: var(--muted); margin-top: 0.8rem; }
+  .results { margin: 1.2rem 0 1.6rem; padding: 0; list-style: none; }
+  .results li { padding-left: 1.4rem; position: relative; margin-top: 0.45rem; color: var(--text); }
+  .results li::before { content: '✓'; position: absolute; left: 0; color: var(--ok); font-weight: 700; }
+</style>
