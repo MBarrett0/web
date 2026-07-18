@@ -1,0 +1,20 @@
+.l3d-section { overflow: hidden; }
+.l3d-layout { display: flex; gap: clamp(2rem, 5vw, 4rem); align-items: center; flex-wrap: wrap; }
+.l3d-side { flex: 1 1 22rem; }
+.l3d-stage { flex: 1 1 24rem; height: min(60vh, 30rem); min-height: 20rem; position: relative; }
+.l3d-mini { width: 340px; background: #0d0f17; border-radius: 6px; overflow: hidden; font-family: var(--font); }
+.l3d-mini .m-nav { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-bottom: 1px solid #1d2133; font-size: 11px; font-weight: 700; }
+.l3d-mini .m-nav i { width: 44px; height: 14px; border-radius: 3px; background: #f2f3f8; }
+.l3d-mini .m-hero { padding: 22px 14px; }
+.l3d-mini .m-hero b { display: block; font-size: 17px; line-height: 1.15; color: #f2f3f8; letter-spacing: -0.02em; }
+.l3d-mini .m-hero p { font-size: 10px; color: #98a0b6; margin-top: 6px; max-width: 26ch; }
+.l3d-mini .m-cta { display: inline-block; margin-top: 10px; background: #8a7cff; color: #0d0f17; font-size: 10px; font-weight: 700; padding: 5px 10px; border-radius: 4px; }
+.l3d-mini .m-rows { padding: 0 14px 16px; }
+.l3d-mini .m-row { height: 9px; border-radius: 2px; background: #1d2133; margin-top: 7px; }
+.l3d-mini .m-row:nth-child(2) { width: 78%; }
+.l3d-mini .m-row:nth-child(3) { width: 56%; }
+.l3d-fallback {
+  width: min(30rem, 100%); margin-inline: auto; transform: perspective(1100px) rotateX(8deg) rotateY(-10deg);
+  border-radius: 10px; border: 1px solid var(--line); box-shadow: 0 40px 80px rgb(0 0 0 / 0.5);
+}
+.l3d-fallback .l3d-mini { width: 100%; }

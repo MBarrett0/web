@@ -7,6 +7,7 @@ import Services from '../components/Services.astro';
 import BeforeAfter from '../components/sims/BeforeAfter';
 import WhatsAppShowcase from '../components/WhatsAppShowcase.astro';
 import TurnosShowcase from '../components/TurnosShowcase.astro';
+import Laptop3D from '../components/sims/Laptop3D';
 ---
 <Base
   title="Automatización, reservas y webs para tu negocio"
@@ -19,7 +20,7 @@ import TurnosShowcase from '../components/TurnosShowcase.astro';
     <BeforeAfter client:visible={{ rootMargin: '600px' }} />
     <WhatsAppShowcase />
     <TurnosShowcase />
-    <section id="web"></section>
+    <Laptop3D client:only="react" />
     <section id="caso"></section>
     <section id="proceso"></section>
     <section id="planes"></section>
