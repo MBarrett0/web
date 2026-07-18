@@ -1,0 +1,43 @@
+---
+import { copy } from '../data/copy';
+const words = copy.hero.title.split(' ');
+---
+<section id="inicio" class="hero">
+  <div class="container">
+    <p class="kicker">{copy.hero.kicker}</p>
+    <h1 aria-label={copy.hero.title}>
+      {words.map((w) => (
+        <span class="wm" aria-hidden="true"><span class="w">{w}</span></span>
+      ))}
+    </h1>
+    <p class="lead">{copy.hero.lead}</p>
+    <div class="ctas">
+      <a class="btn btn-primary" href="#contacto">{copy.hero.ctaPrimary}</a>
+      <a class="btn btn-ghost" href="#automatizacion">{copy.hero.ctaSecondary}</a>
+    </div>
+  </div>
+  <div class="glow" aria-hidden="true"></div>
+</section>
+<script>
+  import { heroIntro } from '../lib/hero-intro';
+  heroIntro();
+</script>
+<style>
+  .hero {
+    min-height: 100svh; display: flex; align-items: center;
+    position: relative; padding-top: 5rem; overflow: hidden;
+  }
+  h1 {
+    font-size: clamp(2.5rem, 7.5vw, 5.2rem); font-weight: 800;
+    max-width: 16ch; margin-top: 1.1rem;
+  }
+  .wm { display: inline-block; overflow: hidden; vertical-align: bottom; margin-right: 0.26em; }
+  .w { display: inline-block; }
+  .lead { color: var(--muted); font-size: clamp(1.05rem, 2vw, 1.25rem); max-width: 34rem; margin-top: 1.4rem; }
+  .ctas { display: flex; flex-wrap: wrap; gap: 0.9rem; margin-top: 2.2rem; }
+  .glow {
+    position: absolute; inset: auto -20% -40% -20%; height: 70%;
+    background: radial-gradient(ellipse at 30% 100%, rgb(138 124 255 / 0.13), transparent 60%);
+    pointer-events: none;
+  }
+</style>
