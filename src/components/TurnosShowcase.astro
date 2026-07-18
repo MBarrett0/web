@@ -1,0 +1,91 @@
+---
+import SectionCta from './SectionCta.astro';
+const days = [
+  { d: 'Jueves', slots: [
+    { h: '10:00', who: 'Carla M.', src: 'desde WhatsApp' },
+    { h: '15:00', who: 'Diego P.', src: 'desde la web' },
+  ]},
+  { d: 'Viernes', slots: [
+    { h: '11:30', who: 'Romina S.', src: 'desde WhatsApp', cancels: true, replacement: 'Lucía F. · lista de espera' },
+    { h: '17:00', who: 'Martín A.', src: 'desde WhatsApp' },
+  ]},
+];
+---
+<section id="turnos">
+  <div class="container">
+    <div class="section-head" data-reveal>
+      <p class="kicker">Gestión de turnos</p>
+      <h2>La agenda se ordena sola.</h2>
+      <p>Cada reserva entra a la agenda al instante. Si alguien cancela, el lugar se ofrece solo a la lista de espera. Los recordatorios salen sin que nadie se acuerde.</p>
+    </div>
+    <div class="tn-board" data-reveal aria-label="Demostración de agenda automática">
+      {days.map((day) => (
+        <div class="tn-day">
+          <p class="tn-dayname">{day.d}</p>
+          {day.slots.map((s) => (
+            <div class="tn-slot">
+              <span class="tn-hour">{s.h}</span>
+              <span class="tn-chip" data-cancels={s.cancels ? 'true' : undefined}>
+                <strong>{s.who}</strong> <small>{s.src}</small>
+              </span>
+              {s.replacement && (
+                <span class="tn-chip tn-replacement"><strong>{s.replacement}</strong> <small>reasignado</small></span>
+              )}
+            </div>
+          ))}
+        </div>
+      ))}
+      <p class="tn-toast">✓ Recordatorios de mañana enviados a 4 clientes</p>
+    </div>
+    <SectionCta question="¿Seguís anotando turnos a mano?" />
+  </div>
+</section>
+<script>
+  import { gsap, ScrollTrigger, prefersReducedMotion } from '../lib/gsap';
+
+  if (!prefersReducedMotion()) {
+    const chips = gsap.utils.toArray<HTMLElement>('#turnos .tn-chip:not(.tn-replacement)');
+    const cancelChip = document.querySelector<HTMLElement>('#turnos .tn-chip[data-cancels]')!;
+    const replacement = document.querySelector<HTMLElement>('#turnos .tn-replacement')!;
+    const toast = document.querySelector<HTMLElement>('#turnos .tn-toast')!;
+    gsap.set(chips, { autoAlpha: 0, scale: 0.85, transformOrigin: 'left center' });
+    gsap.set([replacement, toast], { autoAlpha: 0, y: 10 });
+
+    const tl = gsap.timeline({ paused: true, defaults: { ease: 'back.out(1.6)' } });
+    tl.add(() => cancelChip.classList.remove('cancelled'), 0) // limpia el estado al hacer restart
+      .to(chips, { autoAlpha: 1, scale: 1, duration: 0.45, stagger: 0.55 }, 0.3)
+      .add(() => cancelChip.classList.add('cancelled'), '+=0.7')
+      .to(cancelChip, { autoAlpha: 0.35, duration: 0.3 }, '<')
+      .to(replacement, { autoAlpha: 1, y: 0, duration: 0.5 }, '+=0.5')
+      .to(toast, { autoAlpha: 1, y: 0, duration: 0.5, ease: 'power2.out' }, '+=0.6');
+
+    ScrollTrigger.create({
+      trigger: '#turnos .tn-board',
+      start: 'top 70%',
+      onEnter: () => tl.restart(),
+      onEnterBack: () => tl.restart(),
+    });
+  }
+</script>
+<style>
+  .tn-board {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 0.9rem;
+    padding: clamp(1.2rem, 3vw, 2rem); max-width: 46rem;
+  }
+  .tn-day + .tn-day { margin-top: 1.2rem; }
+  .tn-dayname { font-weight: 700; margin-bottom: 0.5rem; }
+  .tn-slot { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; padding-block: 0.45rem; border-top: 1px dashed var(--line); }
+  .tn-hour { color: var(--muted); font-size: 0.85rem; min-width: 3.2rem; }
+  .tn-chip {
+    background: rgb(138 124 255 / 0.12); border: 1px solid rgb(138 124 255 / 0.4);
+    border-radius: 2rem; padding: 0.3rem 0.85rem; font-size: 0.88rem;
+  }
+  .tn-chip small { color: var(--muted); margin-left: 0.3rem; }
+  .tn-chip.cancelled { text-decoration: line-through; border-color: var(--bad); background: rgb(255 107 107 / 0.1); }
+  .tn-replacement { background: rgb(74 222 128 / 0.1); border-color: rgb(74 222 128 / 0.45); }
+  .tn-toast {
+    margin-top: 1.3rem; display: inline-block; background: rgb(74 222 128 / 0.1);
+    border: 1px solid rgb(74 222 128 / 0.4); color: var(--ok);
+    border-radius: 0.55rem; padding: 0.5rem 0.9rem; font-size: 0.88rem; font-weight: 600;
+  }
+</style>
