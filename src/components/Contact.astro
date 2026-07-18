@@ -1,0 +1,98 @@
+---
+import { copy } from '../data/copy';
+---
+<section id="contacto">
+  <div class="container layout">
+    <div class="side" data-reveal>
+      <p class="kicker">Contacto</p>
+      <h2>{copy.contact.title}</h2>
+      <p class="sub">{copy.contact.sub}</p>
+      <p class="alt">
+        Si preferís el mail directo:
+        <a href={`mailto:${copy.contact.email}`}>{copy.contact.email}</a>
+      </p>
+    </div>
+    <form id="contact-form" data-reveal novalidate={false}>
+      <label>Tu nombre
+        <input name="name" type="text" required minlength="2" autocomplete="name" />
+      </label>
+      <label>Tu negocio o rubro
+        <input name="business" type="text" required minlength="2" />
+      </label>
+      <label>¿Qué necesitás?
+        <select name="service" required>
+          <option value="" disabled selected>Elegí una opción</option>
+          {copy.contact.services.map((s) => <option value={s}>{s}</option>)}
+        </select>
+      </label>
+      <label>Contame un poco más
+        <textarea name="message" rows="4" required minlength="10"></textarea>
+      </label>
+      <input type="checkbox" name="botcheck" class="hp" tabindex="-1" autocomplete="off" />
+      <button class="btn btn-primary" type="submit">Enviar</button>
+      <p id="form-status" role="status" aria-live="polite"></p>
+    </form>
+  </div>
+</section>
+<script>
+  // Reemplazar por tu access key de https://web3forms.com (gratis) antes de publicar.
+  const WEB3FORMS_ACCESS_KEY = 'REEMPLAZAR_CON_TU_ACCESS_KEY';
+
+  const form = document.querySelector<HTMLFormElement>('#contact-form')!;
+  const status = document.querySelector<HTMLElement>('#form-status')!;
+  const submitBtn = form.querySelector<HTMLButtonElement>('button[type=submit]')!;
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!form.reportValidity()) return;
+    submitBtn.disabled = true;
+    status.textContent = 'Enviando…';
+    try {
+      const res = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({
+          access_key: WEB3FORMS_ACCESS_KEY,
+          subject: 'Nueva consulta desde la web',
+          ...Object.fromEntries(new FormData(form)),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.message ?? 'error');
+      status.textContent = '✓ Recibido. Te respondo dentro del día.';
+      form.reset();
+    } catch {
+      status.textContent = 'No se pudo enviar. Probá de nuevo en un rato o escribime directo por mail (acá abajo no se borró nada de lo que escribiste).';
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+
+  // Precarga del servicio desde los CTAs de planes
+  document.querySelectorAll<HTMLAnchorElement>('a[data-plan]').forEach((a) => {
+    a.addEventListener('click', () => {
+      const sel = form.elements.namedItem('service') as HTMLSelectElement;
+      sel.value = a.dataset.plan ?? '';
+    });
+  });
+</script>
+<style>
+  .layout { display: flex; gap: clamp(2rem, 6vw, 5rem); flex-wrap: wrap; }
+  .side { flex: 1 1 20rem; }
+  .sub { color: var(--muted); margin-top: 0.8rem; max-width: 28rem; }
+  .alt { margin-top: 1.6rem; color: var(--muted); font-size: 0.95rem; }
+  .alt a { color: var(--text); text-decoration-color: var(--accent); text-underline-offset: 4px; }
+  form { flex: 1 1 24rem; display: flex; flex-direction: column; gap: 1rem; max-width: 30rem; }
+  label { display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.92rem; font-weight: 600; }
+  input, select, textarea {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 0.55rem;
+    color: var(--text); padding: 0.7rem 0.9rem; font: inherit; font-weight: 400;
+  }
+  input:focus-visible, select:focus-visible, textarea:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 1px; border-color: transparent;
+  }
+  .hp { position: absolute; left: -9999px; }
+  button { margin-top: 0.4rem; align-self: flex-start; }
+  button:disabled { opacity: 0.6; transform: none; }
+  #form-status { color: var(--muted); min-height: 1.4em; font-size: 0.95rem; }
+</style>
