@@ -52,7 +52,7 @@ export default function BeforeAfter() {
           <div className="container">
             <p className="kicker">Automatización de servicios</p>
             <div className="ba-titles">
-              <h2 className="ba-title-before">Así se ve un martes sin automatizar.</h2>
+              <h2 className="ba-title-before" style={reduced ? { opacity: 0, visibility: 'hidden' } : undefined}>Así se ve un martes sin automatizar.</h2>
               <h2 className="ba-title-after" style={reduced ? { opacity: 1, visibility: 'visible' } : undefined}>
                 El mismo martes, automatizado.
               </h2>

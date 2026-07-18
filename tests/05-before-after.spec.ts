@@ -17,4 +17,6 @@ test('antes/después: con reduced motion se ve el estado final', async ({ page }
   await page.goto('/web/');
   await page.locator('#automatizacion').scrollIntoViewIfNeeded();
   await expect(page.locator('.ba-msg.ok')).toHaveCount(4);
+  await expect(page.locator('.ba-title-after')).toBeVisible();
+  await expect(page.locator('.ba-title-before')).toBeHidden();
 });
