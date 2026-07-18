@@ -1,0 +1,13 @@
+# Build
+dist/
+node_modules/
+.astro/
+
+# Brainstorming companion (local tooling)
+.superpowers/
+
+# Env / local
+.env
+.env.*
+!.env.example
+.DS_Store
