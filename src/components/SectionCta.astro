@@ -1,0 +1,7 @@
+---
+interface Props { question?: string; }
+const { question = '¿Esto le serviría a tu negocio?' } = Astro.props;
+---
+<p class="micro-cta" data-reveal>
+  {question} <a href="#contacto">Contame tu caso →</a>
+</p>

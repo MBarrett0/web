@@ -1,0 +1,26 @@
+.ba-wrap { height: 280vh; }
+.ba-wrap.static { height: auto; }
+.ba-panel {
+  position: sticky; top: 0; min-height: 100svh;
+  display: flex; flex-direction: column; justify-content: center;
+  padding-block: 5.5rem 3rem;
+}
+.ba-titles { position: relative; min-height: 4.2em; max-width: 40rem; }
+.ba-titles h2 { position: absolute; inset-inline: 0; top: 0; }
+.ba-title-after { opacity: 0; visibility: hidden; }
+.ba-grid { display: flex; gap: clamp(1.5rem, 5vw, 4rem); align-items: flex-start; margin-top: 1rem; flex-wrap: wrap; }
+.ba-msgs { flex: 1 1 20rem; display: flex; flex-direction: column; gap: 0.8rem; }
+.ba-msg {
+  background: var(--surface); border: 1px solid var(--line);
+  border-left: 3px solid var(--bad);
+  border-radius: 0.6rem; padding: 0.9rem 1.1rem;
+  transition: border-color 0.4s ease;
+}
+.ba-msg .from { font-weight: 700; font-size: 0.9rem; }
+.ba-msg .text { color: var(--muted); font-size: 0.95rem; margin-top: 0.15rem; }
+.ba-msg .badge { display: inline-block; margin-top: 0.55rem; font-size: 0.78rem; font-weight: 600; color: var(--bad); }
+.ba-msg.ok { border-left-color: var(--ok); }
+.ba-msg.ok .badge { color: var(--ok); }
+.ba-stats { flex: 0 1 16rem; display: flex; flex-direction: column; gap: 1.6rem; }
+.ba-stat .val { font-size: clamp(2.2rem, 6vw, 3.4rem); font-weight: 800; letter-spacing: -0.03em; }
+.ba-stat .lbl { color: var(--muted); font-size: 0.9rem; }
