@@ -5,6 +5,7 @@ import Footer from '../components/Footer.astro';
 import Hero from '../components/Hero.astro';
 import Services from '../components/Services.astro';
 import BeforeAfter from '../components/sims/BeforeAfter';
+import WhatsAppShowcase from '../components/WhatsAppShowcase.astro';
 ---
 <Base
   title="Automatización, reservas y webs para tu negocio"
@@ -15,7 +16,7 @@ import BeforeAfter from '../components/sims/BeforeAfter';
     <Hero />
     <Services />
     <BeforeAfter client:visible={{ rootMargin: '600px' }} />
-    <section id="whatsapp"></section>
+    <WhatsAppShowcase />
     <section id="turnos"></section>
     <section id="web"></section>
     <section id="caso"></section>

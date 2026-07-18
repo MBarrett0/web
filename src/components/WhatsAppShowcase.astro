@@ -1,0 +1,79 @@
+---
+import SectionCta from './SectionCta.astro';
+---
+<section id="whatsapp">
+  <div class="container layout">
+    <div class="side">
+      <div class="section-head" data-reveal>
+        <p class="kicker">Reservas por WhatsApp</p>
+        <h2>El turno se agenda en la misma conversación.</h2>
+        <p>Tu cliente escribe como siempre. El sistema responde al instante, ofrece horarios reales y confirma. Vos no tocás nada.</p>
+      </div>
+      <SectionCta question="¿Tus clientes ya te escriben por WhatsApp?" />
+    </div>
+    <div class="wa-phone" data-reveal aria-label="Demostración de una reserva por WhatsApp">
+      <div class="wa-top"><span class="wa-avatar"></span><span>Estética Nova</span><span class="wa-status">en línea</span></div>
+      <div class="wa-chat">
+        <p class="wa-msg user">¡Hola! ¿Tenés lugar el jueves?</p>
+        <p class="wa-typing" aria-hidden="true"><span></span><span></span><span></span></p>
+        <p class="wa-msg bot">¡Hola! Sí — el jueves tengo <strong>10:30</strong>, <strong>15:00</strong> y <strong>18:30</strong>. ¿Cuál te queda mejor?</p>
+        <p class="wa-msg user">15:00 👌</p>
+        <p class="wa-msg bot card">✓ <strong>Turno confirmado</strong><br />Jueves · 15:00<br /><small>Te llega un recordatorio el miércoles.</small></p>
+      </div>
+    </div>
+  </div>
+</section>
+<script>
+  import { gsap, ScrollTrigger, prefersReducedMotion } from '../lib/gsap';
+
+  if (!prefersReducedMotion()) {
+    const msgs = gsap.utils.toArray<HTMLElement>('#whatsapp .wa-msg');
+    const typing = document.querySelector<HTMLElement>('#whatsapp .wa-typing')!;
+    gsap.set(msgs, { autoAlpha: 0, y: 14 });
+    gsap.set(typing, { autoAlpha: 0 });
+
+    const tl = gsap.timeline({ paused: true, defaults: { ease: 'power2.out' } });
+    tl.to(msgs[0], { autoAlpha: 1, y: 0, duration: 0.45 }, 0.3)
+      .to(typing, { autoAlpha: 1, duration: 0.2 }, '+=0.5')
+      .to(typing, { autoAlpha: 0, duration: 0.2 }, '+=1.1')
+      .to(msgs[1], { autoAlpha: 1, y: 0, duration: 0.45 }, '<')
+      .to(msgs[2], { autoAlpha: 1, y: 0, duration: 0.45 }, '+=1.0')
+      .to(typing, { autoAlpha: 1, duration: 0.2 }, '+=0.4')
+      .to(typing, { autoAlpha: 0, duration: 0.2 }, '+=0.9')
+      .to(msgs[3], { autoAlpha: 1, y: 0, duration: 0.45 }, '<');
+
+    ScrollTrigger.create({
+      trigger: '#whatsapp .wa-phone',
+      start: 'top 70%',
+      onEnter: () => tl.restart(),
+      onEnterBack: () => tl.restart(),
+    });
+  }
+</script>
+<style>
+  .layout { display: flex; gap: clamp(2rem, 6vw, 5rem); align-items: center; flex-wrap: wrap; }
+  .side { flex: 1 1 22rem; }
+  .wa-phone {
+    flex: 0 1 21rem; margin-inline: auto;
+    background: #0b141a; border: 1px solid var(--line); border-radius: 1.6rem;
+    overflow: hidden; box-shadow: 0 30px 60px rgb(0 0 0 / 0.45);
+    width: min(21rem, 100%);
+  }
+  .wa-top {
+    display: flex; align-items: center; gap: 0.6rem;
+    background: #1f2c33; padding: 0.8rem 1rem; font-weight: 600; font-size: 0.95rem;
+  }
+  .wa-avatar { width: 1.9rem; height: 1.9rem; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent-2)); }
+  .wa-status { margin-left: auto; font-weight: 400; font-size: 0.75rem; color: #8fa6ae; }
+  .wa-chat { padding: 1.1rem 0.9rem 1.4rem; display: flex; flex-direction: column; gap: 0.6rem; min-height: 21rem; }
+  .wa-msg { max-width: 85%; padding: 0.55rem 0.8rem; border-radius: 0.7rem; font-size: 0.92rem; line-height: 1.4; }
+  .wa-msg.user { align-self: flex-end; background: #005c4b; border-bottom-right-radius: 0.15rem; }
+  .wa-msg.bot { align-self: flex-start; background: #1f2c33; border-bottom-left-radius: 0.15rem; }
+  .wa-msg.card { border: 1px solid #2a3942; }
+  .wa-msg small { color: #8fa6ae; }
+  .wa-typing { align-self: flex-start; background: #1f2c33; border-radius: 0.7rem; padding: 0.6rem 0.8rem; display: flex; gap: 0.25rem; }
+  .wa-typing span { width: 0.4rem; height: 0.4rem; border-radius: 50%; background: #8fa6ae; animation: blink 1.2s infinite; }
+  .wa-typing span:nth-child(2) { animation-delay: 0.2s; }
+  .wa-typing span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes blink { 0%, 60%, 100% { opacity: 0.3; } 30% { opacity: 1; } }
+</style>
