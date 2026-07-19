@@ -1,5 +1,16 @@
 ---
 import SectionCta from './SectionCta.astro';
+
+// Julio 2026: empieza miércoles (offset 2 celdas bajo L-M), 31 días, jueves 9 objetivo.
+const monthOffset = 2;
+const monthDays = Array.from({ length: 31 }, (_, i) => i + 1);
+const slots = [
+  { time: '10:30', kind: 'free' },
+  { time: '12:00', kind: 'busy', who: 'Corte — Ana' },
+  { time: '15:00', kind: 'free', target: true },
+  { time: '16:30', kind: 'busy', who: 'Color — Lucía' },
+  { time: '18:30', kind: 'free' },
+];
 ---
 <section id="whatsapp">
   <div class="container layout">
@@ -11,15 +22,42 @@ import SectionCta from './SectionCta.astro';
       </div>
       <SectionCta question="¿Tus clientes ya te escriben por WhatsApp?" />
     </div>
-    <div class="wa-phone" data-reveal aria-label="Demostración de una reserva por WhatsApp">
-      <div class="wa-top"><span class="wa-avatar"></span><span>Estética Nova</span><span class="wa-status">en línea</span></div>
-      <div class="wa-chat">
-        <p class="wa-msg user">¡Hola! ¿Tenés lugar el jueves?</p>
-        <p class="wa-typing" aria-hidden="true"><span></span><span></span><span></span></p>
-        <p class="wa-msg bot">¡Hola! Sí — el jueves tengo <strong>10:30</strong>, <strong>15:00</strong> y <strong>18:30</strong>. ¿Cuál te queda mejor?</p>
-        <p class="wa-msg user">15:00 👌</p>
-        <p class="wa-typing" aria-hidden="true"><span></span><span></span><span></span></p>
-        <p class="wa-msg bot card">✓ <strong>Turno confirmado</strong><br />Jueves · 15:00<br /><small>Te llega un recordatorio el miércoles.</small></p>
+    <div class="wa-duo" data-reveal>
+      <div class="wa-phone" aria-label="Demostración de una reserva por WhatsApp">
+        <div class="wa-top"><span class="wa-avatar"></span><span>Estética Nova</span><span class="wa-status">en línea</span></div>
+        <div class="wa-chat">
+          <p class="wa-msg user">¡Hola! ¿Tenés lugar el jueves?</p>
+          <p class="wa-typing" aria-hidden="true"><span></span><span></span><span></span></p>
+          <p class="wa-msg bot">¡Hola! Sí — el jueves tengo <strong>10:30</strong>, <strong>15:00</strong> y <strong>18:30</strong>. ¿Cuál te queda mejor?</p>
+          <p class="wa-msg user">15:00 👌</p>
+          <p class="wa-typing" aria-hidden="true"><span></span><span></span><span></span></p>
+          <p class="wa-msg bot card">✓ <strong>Turno confirmado</strong><br />Jueves · 15:00<br /><small>Te llega un recordatorio el miércoles.</small></p>
+        </div>
+      </div>
+      <div class="wa-cal" aria-label="Calendario de reservas, jueves 9 seleccionado">
+        <div class="wa-cal-screens">
+          <div class="wa-cal-month" aria-hidden="true">
+            <p class="wa-cal-title">Julio</p>
+            <div class="wa-cal-grid">
+              {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((d) => <span class="dow">{d}</span>)}
+              {Array.from({ length: monthOffset }).map(() => <span class="pad"></span>)}
+              {monthDays.map((d) => <span class={`d${d === 9 ? ' target' : ''}`}>{d}</span>)}
+            </div>
+          </div>
+          <div class="wa-cal-day">
+            <p class="wa-cal-title">Jueves 9 · Julio</p>
+            <ul class="wa-slots">
+              {slots.map((s) => (
+                <li class={`wa-slot ${s.kind}${s.target ? ' target booked' : ''}`}>
+                  <span class="t">{s.time}</span>
+                  {s.kind === 'busy' && <span class="who">{s.who}</span>}
+                  {s.kind === 'free' && <span class="tag">libre</span>}
+                  {s.target && <span class="wa-booking">✓ Reserva nueva</span>}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -52,10 +90,15 @@ import SectionCta from './SectionCta.astro';
   }
 </script>
 <style>
-  .layout { display: flex; gap: clamp(2rem, 6vw, 5rem); align-items: center; flex-wrap: wrap; }
-  .side { flex: 1 1 22rem; }
+  .layout { display: flex; gap: clamp(2rem, 5vw, 4rem); align-items: center; flex-wrap: wrap; }
+  .side { flex: 1 1 20rem; }
+  .wa-duo {
+    flex: 1 1 30rem; display: flex; gap: clamp(1rem, 2.5vw, 1.8rem);
+    align-items: center; justify-content: center; flex-wrap: wrap;
+    position: relative; /* host del clon viajero */
+  }
   .wa-phone {
-    flex: 0 1 21rem; margin-inline: auto;
+    flex: 0 1 21rem;
     background: #0b141a; border: 1px solid var(--line); border-radius: 1.6rem;
     overflow: hidden; box-shadow: 0 30px 60px rgb(0 0 0 / 0.45);
     width: min(21rem, 100%);
@@ -77,4 +120,34 @@ import SectionCta from './SectionCta.astro';
   .wa-typing span:nth-child(2) { animation-delay: 0.2s; }
   .wa-typing span:nth-child(3) { animation-delay: 0.4s; }
   @keyframes blink { 0%, 60%, 100% { opacity: 0.3; } 30% { opacity: 1; } }
+  /* Calendario */
+  .wa-cal {
+    flex: 0 1 15.5rem; width: min(15.5rem, 100%);
+    background: #0b141a; border: 1px solid var(--line); border-radius: 1.2rem;
+    box-shadow: 0 30px 60px rgb(0 0 0 / 0.45);
+    padding: 1rem 0.9rem 1.1rem;
+  }
+  .wa-cal-screens { position: relative; }
+  .wa-cal-title { font-weight: 600; font-size: 0.9rem; margin-bottom: 0.7rem; }
+  /* Estado final por defecto (no-JS / reduced motion): Mes oculto, Día visible */
+  .wa-cal-month { position: absolute; inset: 0; opacity: 0; visibility: hidden; }
+  .wa-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.25rem; text-align: center; font-size: 0.72rem; }
+  .wa-cal-grid .dow { color: #8fa6ae; font-weight: 600; padding-block: 0.15rem; }
+  .wa-cal-grid .d { padding-block: 0.3rem; border-radius: 0.4rem; color: #d5dee3; }
+  .wa-cal-grid .d.target { background: rgba(37, 211, 102, 0.16); border: 1px solid rgba(37, 211, 102, 0.45); font-weight: 700; }
+  .wa-slots { list-style: none; display: flex; flex-direction: column; gap: 0.45rem; padding: 0; margin: 0; }
+  .wa-slot {
+    display: flex; align-items: center; gap: 0.55rem;
+    background: #141f26; border: 1px solid var(--line); border-radius: 0.55rem;
+    padding: 0.45rem 0.65rem; font-size: 0.82rem;
+  }
+  .wa-slot .t { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .wa-slot.busy { opacity: 0.55; }
+  .wa-slot .who, .wa-slot .tag { color: #8fa6ae; font-size: 0.76rem; }
+  .wa-slot.free .tag { color: #25d366; }
+  .wa-booking { color: #25d366; font-weight: 600; font-size: 0.78rem; }
+  /* target: booked muestra la reserva, sin booked muestra "libre" */
+  .wa-slot.target:not(.booked) .wa-booking { display: none; }
+  .wa-slot.target.booked .tag { display: none; }
+  .wa-slot.target.booked { border-color: rgba(37, 211, 102, 0.45); }
 </style>
