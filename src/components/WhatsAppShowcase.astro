@@ -79,6 +79,7 @@ const slots = [
       flyTl?.kill();
       flyTl = null;
       duo.querySelector('.wa-fly')?.remove();
+      gsap.set(targetSlot, { clearProps: 'backgroundColor' });
     }
 
     function runMorph() {
