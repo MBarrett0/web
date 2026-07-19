@@ -1,155 +1,72 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import './automation.css';
 
 const prefersReducedMotion = (): boolean =>
   typeof window !== 'undefined' &&
   window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-// COPY — editable
-const TASKS = ['Confirmar turno', 'Enviar recordatorio', 'Actualizar agenda', 'Cargar datos del cliente'];
-// Minutos "de reloj" que suma cada tarea hecha a mano (ilustrativo)
-const MANUAL_LUMP = [255, 240, 300, 210]; // segundos
-const AUTO_MS = 2600; // duración del barrido automático
-const IDLE_MS = 2000; // si no clickeás, avanza solo
-const WORKDAY_H = 8; // una jornada = 8 h
+// COPY — editable. Cada fila tiene su versión "a mano" y su versión "resuelta".
+const ROWS = [
+  { manual: { t: '14 mensajes sin responder en WhatsApp', s: 'Pendiente' }, auto: { t: '0 mensajes pendientes', s: 'Respondido al instante' } },
+  { manual: { t: 'Turno superpuesto a las 15:00', s: 'Sin resolver' }, auto: { t: 'Agenda optimizada, sin choques', s: 'Ordenado' } },
+  { manual: { t: 'Cliente sin confirmar el jueves', s: 'Alerta' }, auto: { t: '3 recordatorios enviados hoy', s: 'Automático' } },
+];
+
+const WEEKS_PER_MONTH = 52 / 12;
+const WORKDAY_H = 8;
 
 const Check = () => (
   <svg viewBox="0 0 12 12" fill="none" aria-hidden="true">
-    <path d="M2 6.5 4.6 9 10 3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M2 6.5 4.6 9 10 3" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
-
-const fmtClock = (s: number) => {
-  const m = Math.floor(s / 60);
-  const sec = Math.floor(s % 60);
-  return `${m}:${String(sec).padStart(2, '0')}`;
-};
-
-const allDone = (arr: boolean[]) => arr.every(Boolean);
-const nextIndex = (arr: boolean[]) => arr.findIndex((d) => !d);
 
 export default function Automation() {
   const reduced = typeof window !== 'undefined' && prefersReducedMotion();
   const root = useRef<HTMLElement>(null);
 
-  // ── Estado manual ──────────────────────────────────────────────────────
-  const [manual, setManual] = useState<boolean[]>(() =>
-    reduced ? TASKS.map(() => true) : TASKS.map(() => false),
-  );
-  const [manualSec, setManualSec] = useState(reduced ? MANUAL_LUMP.reduce((a, b) => a + b, 0) : 0);
-  const [active, setActive] = useState(reduced); // sección en viewport → invita
-  const lastAction = useRef(0);
+  const [mode, setMode] = useState<'manual' | 'auto'>(reduced ? 'auto' : 'manual');
+  const [playKey, setPlayKey] = useState(0); // reinicia el pulso al pasar a auto
+  const userTouched = useRef(false);
 
-  // ── Estado auto ────────────────────────────────────────────────────────
-  const [auto, setAuto] = useState<boolean[]>(() =>
-    reduced ? TASKS.map(() => true) : TASKS.map(() => false),
-  );
-  const [autoProg, setAutoProg] = useState(reduced ? 1 : 0);
-  const [autoRunning, setAutoRunning] = useState(false);
-  const [autoSec, setAutoSec] = useState(3);
-  const autoRaf = useRef<number>();
+  const go = (m: 'manual' | 'auto') => {
+    userTouched.current = true;
+    if (m === 'auto') setPlayKey((k) => k + 1);
+    setMode(m);
+  };
 
-  // ── Calculadora ────────────────────────────────────────────────────────
-  const [reservas, setReservas] = useState(40);
-  const [minutos, setMinutos] = useState(10);
-
-  const manualComplete = allDone(manual);
-  const autoComplete = allDone(auto);
-
-  // Ref espejo del estado manual, para no anidar setState dentro de otro updater
-  const manualRef = useRef(manual);
-  manualRef.current = manual;
-
-  // Un clic completa la próxima tarea y empuja el reloj
-  const processNext = useCallback(() => {
-    const prev = manualRef.current;
-    const i = nextIndex(prev);
-    if (i < 0) return;
-    lastAction.current = Date.now();
-    const copy = [...prev];
-    copy[i] = true;
-    manualRef.current = copy;
-    setManual(copy);
-    setManualSec((s) => s + MANUAL_LUMP[i]);
-  }, []);
-
-  const resetManual = useCallback(() => {
-    lastAction.current = Date.now();
-    const fresh = TASKS.map(() => false);
-    manualRef.current = fresh;
-    setManual(fresh);
-    setManualSec(0);
-  }, []);
-
-  // Auto: barrido fluido, tareas solas, reloj mínimo
-  const runAuto = useCallback(() => {
-    if (reduced) return;
-    setAuto(TASKS.map(() => false));
-    setAutoProg(0);
-    setAutoRunning(true);
-    const start = performance.now();
-    const tick = (now: number) => {
-      const p = Math.min(1, (now - start) / AUTO_MS);
-      setAutoProg(p);
-      setAutoSec(Math.max(1, Math.round(p * 3)));
-      setAuto(TASKS.map((_, i) => p >= (i + 1) / (TASKS.length + 0.15)));
-      if (p < 1) {
-        autoRaf.current = requestAnimationFrame(tick);
-      } else {
-        setAuto(TASKS.map(() => true));
-        setAutoRunning(false);
-      }
-    };
-    autoRaf.current = requestAnimationFrame(tick);
-  }, [reduced]);
-
-  const resetAuto = useCallback(() => {
-    if (autoRaf.current) cancelAnimationFrame(autoRaf.current);
-    setAuto(TASKS.map(() => false));
-    setAutoProg(0);
-    setAutoRunning(false);
-    setAutoSec(3);
-  }, []);
-
-  // ── Viewport: activa la invitación y auto-arranca el lado automático ────
+  // Reveal pasivo: entra en Manual y, si el visitante no toca nada, muestra solo la paz.
   useEffect(() => {
     if (reduced || !root.current) return;
     const el = root.current;
-    let autoTimer: ReturnType<typeof setTimeout>;
+    let t: ReturnType<typeof setTimeout>;
     const io = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setActive(true);
-          lastAction.current = Date.now();
-          autoTimer = setTimeout(() => runAuto(), 900); // pasivo: el lado bueno se muestra solo
+          t = setTimeout(() => {
+            if (!userTouched.current) { setPlayKey((k) => k + 1); setMode('auto'); }
+          }, 1500);
           io.disconnect();
         }
       },
-      { threshold: 0.35 },
+      { threshold: 0.4 },
     );
     io.observe(el);
-    return () => {
-      io.disconnect();
-      clearTimeout(autoTimer);
-    };
-  }, [reduced, runAuto]);
+    return () => { io.disconnect(); clearTimeout(t); };
+  }, [reduced]);
 
-  // ── Reloj manual que sube + auto-avance si el visitante no clickea ──────
-  useEffect(() => {
-    if (reduced || !active || manualComplete) return;
-    const id = setInterval(() => {
-      setManualSec((s) => s + 3); // el tiempo corre igual mientras hay cola
-      if (Date.now() - lastAction.current > IDLE_MS) processNext();
-    }, 300);
-    return () => clearInterval(id);
-  }, [reduced, active, manualComplete, processNext]);
+  // Calculadora
+  const [turnos, setTurnos] = useState(40);
+  const [minutos, setMinutos] = useState(10);
+  const hours = useMemo(
+    () => Math.round((turnos * WEEKS_PER_MONTH * minutos) / 60),
+    [turnos, minutos],
+  );
+  const days = useMemo(() => Math.max(1, Math.round(hours / WORKDAY_H)), [hours]);
+  const shownHours = useTicker(hours, reduced);
 
-  useEffect(() => () => { if (autoRaf.current) cancelAnimationFrame(autoRaf.current); }, []);
-
-  // ── Cálculo de ahorro ──────────────────────────────────────────────────
-  const hours = useMemo(() => Math.round((reservas * minutos * 52) / 60), [reservas, minutos]);
-  const days = useMemo(() => Math.round(hours / WORKDAY_H), [hours]);
-  const shownHours = useAnimatedNumber(hours, reduced);
+  const isAuto = mode === 'auto';
+  const load = isAuto ? 8 : 85;
 
   return (
     <section id="automatizacion" className="au" ref={root}>
@@ -157,86 +74,55 @@ export default function Automation() {
         <header className="au-head">
           <p className="au-kicker">Automatización de servicios</p>
           <h2 className="au-title">
-            Las mismas tareas. <b>Una las hacés vos, la otra se hace sola.</b>
+            Un día cualquiera del negocio, <b>con y sin el sistema andando.</b>
           </h2>
           <p className="au-sub">
-            Cada reserva arrastra la misma lista de siempre. Mirá lo que cuesta hacerla a mano
-            y lo que pesa cuando el sistema la resuelve por vos.
+            Movés el interruptor y ves el mismo día de dos maneras: el que corrés vos a mano
+            y el que se resuelve solo, en silencio.
           </p>
         </header>
 
-        <div className="au-cols">
-          {/* ── A mano ── */}
-          <div className="au-card is-manual">
-            <div className="au-card-top">
-              <div>
-                <p className="au-label">A mano</p>
-                <p className="au-cap">Tarea por tarea</p>
-              </div>
-              <div className="au-clock">
-                <p className={`t${manualSec > 0 ? ' up' : ''}`}>{fmtClock(manualSec)}</p>
-                <p className="lbl">acumulado esta reserva</p>
-              </div>
+        <div className={`au-card ${isAuto ? 'is-auto' : 'is-manual'}`}>
+          <div className="au-card-top">
+            <div className="au-switch" role="group" aria-label="Modo de operación">
+              <button className={!isAuto ? 'on' : ''} aria-pressed={!isAuto} onClick={() => go('manual')}>Manual</button>
+              <button className={isAuto ? 'on' : ''} aria-pressed={isAuto} onClick={() => go('auto')}>Automatizado</button>
+              <span className="au-switch-thumb" data-mode={mode} aria-hidden="true" />
             </div>
 
-            <ul className="au-tasks">
-              {TASKS.map((t, i) => (
-                <li key={t} className={`au-task${manual[i] ? ' done' : ''}`}>
-                  <span className="tick"><Check /></span>
-                  <span className="name">{t}</span>
-                  <span className="state">{manual[i] ? 'Hecho' : 'Pendiente'}</span>
-                </li>
-              ))}
-            </ul>
-
-            <div className="au-foot">
-              {manualComplete ? (
-                <button className="au-reset" onClick={resetManual}>↺ Empezar de nuevo</button>
-              ) : (
-                <>
-                  <button className={`au-btn${active ? ' invite' : ''}`} onClick={processNext}>
-                    Procesar <span className="arrow">▸</span>
-                  </button>
-                  <span className="au-hint">Pulsá por cada tarea</span>
-                </>
-              )}
+            <div className="au-load">
+              <div className="au-load-head">
+                <span className="k">Carga del día</span>
+                <span className="au-load-tag">{isAuto ? 'Al día' : 'Carga alta'}</span>
+              </div>
+              <div className="au-load-bar"><span style={{ width: `${load}%` }} /></div>
             </div>
           </div>
 
-          {/* ── Automatizado ── */}
-          <div className="au-card is-auto">
-            <div className="au-card-top">
-              <div>
-                <p className="au-label">Automatizado</p>
-                <p className="au-cap">Todo de una</p>
-              </div>
-              <div className="au-clock">
-                <p className="t">{`0:${String(autoSec).padStart(2, '0')}`}</p>
-                <p className="lbl">de principio a fin</p>
-              </div>
+          <div className="au-flow">
+            <div className="au-line" aria-hidden="true">
+              <span className="au-travel" key={playKey} />
+              <span className="au-glow" />
             </div>
-
-            <div className="au-progress"><span style={{ width: `${autoProg * 100}%` }} /></div>
-
-            <ul className="au-tasks">
-              {TASKS.map((t, i) => (
-                <li key={t} className={`au-task${auto[i] ? ' done' : ''}`}>
-                  <span className="tick"><Check /></span>
-                  <span className="name">{t}</span>
-                  <span className="state">{auto[i] ? 'Listo' : autoRunning ? 'Procesando…' : 'En cola'}</span>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+              {ROWS.map((r, i) => (
+                <li className="au-node" key={i}>
+                  <span className="au-dot" style={isAuto ? { transitionDelay: `${0.15 + i * 0.45}s` } : undefined}>
+                    <Check />
+                  </span>
+                  <span className="txt">
+                    <span className="au-state manual" aria-hidden={isAuto}>
+                      <span className="t">{r.manual.t}</span>
+                      <span className="s">{r.manual.s}</span>
+                    </span>
+                    <span className="au-state auto" aria-hidden={!isAuto}>
+                      <span className="t">{r.auto.t}</span>
+                      <span className="s">{r.auto.s}</span>
+                    </span>
+                  </span>
                 </li>
               ))}
             </ul>
-
-            <div className="au-foot">
-              {autoComplete ? (
-                <button className="au-reset" onClick={resetAuto}>↺ Verlo otra vez</button>
-              ) : (
-                <button className="au-btn" onClick={runAuto} disabled={autoRunning}>
-                  Activar automatización
-                </button>
-              )}
-            </div>
           </div>
         </div>
 
@@ -246,35 +132,35 @@ export default function Automation() {
             <div className="au-controls">
               <div className="au-control">
                 <div className="row">
-                  <span className="k">Reservas por semana</span>
-                  <span className="v">{reservas}</span>
+                  <span className="k">Turnos por semana</span>
+                  <span className="v">{turnos}</span>
                 </div>
                 <input
                   className="au-range" type="range" min={5} max={200} step={5}
-                  value={reservas} onChange={(e) => setReservas(Number(e.target.value))}
-                  aria-label="Reservas por semana"
+                  value={turnos} onChange={(e) => setTurnos(Number(e.target.value))}
+                  aria-label="Turnos por semana"
                 />
               </div>
               <div className="au-control">
                 <div className="row">
-                  <span className="k">Minutos por reserva a mano</span>
+                  <span className="k">Minutos por turno a mano</span>
                   <span className="v">{minutos} min</span>
                 </div>
                 <input
                   className="au-range" type="range" min={2} max={30} step={1}
                   value={minutos} onChange={(e) => setMinutos(Number(e.target.value))}
-                  aria-label="Minutos por reserva a mano"
+                  aria-label="Minutos por turno a mano"
                 />
               </div>
             </div>
 
             <div className="au-result">
-              <p className="pre">Lo que dejás de hacer a mano en un año</p>
+              <p className="pre">Lo que dejás de hacer a mano cada mes</p>
               <p className="au-figure">
                 <span className="n">{shownHours.toLocaleString('es-UY')}</span>
-                <span className="u">horas</span>
+                <span className="u">horas libres</span>
               </p>
-              <p className="days">Son <b>≈ {days} jornadas</b> de 8 horas que le devolvés a tu negocio.</p>
+              <p className="ctx">Equivalen a <b>≈ {days} {days === 1 ? 'día entero' : 'días enteros'} de trabajo</b> recuperados para vos.</p>
             </div>
           </div>
         </div>
@@ -283,8 +169,9 @@ export default function Automation() {
   );
 }
 
-// Cuenta suave hacia el valor objetivo (respeta reduced-motion)
-function useAnimatedNumber(target: number, reduced: boolean) {
+// Ticker numérico: persigue el objetivo con suavidad mientras arrastrás y se
+// fija apenas soltás (respeta prefers-reduced-motion).
+function useTicker(target: number, reduced: boolean) {
   const [value, setValue] = useState(target);
   const raf = useRef<number>();
   const from = useRef(target);
@@ -292,12 +179,11 @@ function useAnimatedNumber(target: number, reduced: boolean) {
     if (reduced) { setValue(target); return; }
     const start = performance.now();
     const origin = from.current;
-    const dur = 420;
+    const dur = 380;
     const step = (now: number) => {
       const p = Math.min(1, (now - start) / dur);
       const eased = 1 - Math.pow(1 - p, 3);
-      const v = Math.round(origin + (target - origin) * eased);
-      setValue(v);
+      setValue(Math.round(origin + (target - origin) * eased));
       if (p < 1) raf.current = requestAnimationFrame(step);
       else from.current = target;
     };

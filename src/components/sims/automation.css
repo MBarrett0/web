@@ -1,17 +1,22 @@
 /* ── Isla clara "Metalab" dentro del sitio oscuro ──────────────────────── */
 .au {
-  /* Tokens locales, claros: no se filtran fuera de la sección */
   --paper: #f6f6f4;
   --card: #ffffff;
   --ink: #0c0d10;
   --soft: #6c6d75;
   --hair: #e9e9e6;
   --hair-2: #f0f0ee;
+
+  --warn: #b4670f;
+  --warn-soft: #fbf2e6;
+  --warn-line: #f0ddc4;
+
   --ok: #1f9d55;
-  --ok-soft: #eaf6ee;
-  --warn: #b06a1b;
-  --warn-soft: #fbf1e5;
-  --shadow: 0 1px 2px rgba(12, 13, 16, 0.04), 0 12px 28px rgba(12, 13, 16, 0.06);
+  --ok-soft: #edf7f0;
+  --ok-line: #d6ecdd;
+  --calm: #3f6f8f; /* azul ultra-bajo */
+
+  --shadow: 0 1px 2px rgba(12, 13, 16, 0.04), 0 14px 34px rgba(12, 13, 16, 0.07);
   --shadow-sm: 0 1px 2px rgba(12, 13, 16, 0.05);
 
   position: relative;
@@ -20,151 +25,128 @@
   padding-block: clamp(5rem, 12vh, 9rem);
   overflow: clip;
 }
-/* Fundido con el oscuro de arriba y abajo, sin corte duro */
 .au::before,
-.au::after {
-  content: '';
-  position: absolute;
-  inset-inline: 0;
-  height: 90px;
-  pointer-events: none;
-}
+.au::after { content: ''; position: absolute; inset-inline: 0; height: 90px; pointer-events: none; }
 .au::before { top: 0; background: linear-gradient(#0a0b10, rgba(246, 246, 244, 0)); }
 .au::after { bottom: 0; background: linear-gradient(rgba(246, 246, 244, 0), #0a0b10); }
 
-.au-inner { width: min(1080px, 100% - 2.5rem); margin-inline: auto; position: relative; }
+.au-inner { width: min(1040px, 100% - 2.5rem); margin-inline: auto; position: relative; }
 
 /* ── Encabezado ────────────────────────────────────────────────────────── */
-.au-head { max-width: 34rem; margin-bottom: clamp(2.4rem, 6vh, 4rem); }
-.au-kicker {
-  color: var(--soft); font-size: 0.78rem; font-weight: 600;
-  letter-spacing: 0.16em; text-transform: uppercase;
-}
-.au-title {
-  margin-top: 1rem;
-  font-size: clamp(2rem, 5vw, 3.4rem);
-  font-weight: 300;
-  line-height: 1.04;
-  letter-spacing: -0.03em;
-  color: var(--ink);
-}
+.au-head { max-width: 34rem; margin-bottom: clamp(2.2rem, 5vh, 3.2rem); }
+.au-kicker { color: var(--soft); font-size: 0.78rem; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; }
+.au-title { margin-top: 1rem; font-size: clamp(2rem, 5vw, 3.4rem); font-weight: 300; line-height: 1.04; letter-spacing: -0.03em; }
 .au-title b { font-weight: 600; }
 .au-sub { margin-top: 1.1rem; color: var(--soft); font-size: 1.02rem; max-width: 30rem; }
 
-/* ── Dos columnas ──────────────────────────────────────────────────────── */
-.au-cols {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: clamp(1rem, 3vw, 1.8rem);
-  align-items: start;
-}
+/* ── Tarjeta única ─────────────────────────────────────────────────────── */
 .au-card {
   background: var(--card);
   border: 1px solid var(--hair);
-  border-radius: 20px;
+  border-radius: 22px;
   box-shadow: var(--shadow);
-  padding: clamp(1.3rem, 3vw, 1.9rem);
-  display: flex;
-  flex-direction: column;
-  min-height: 22rem;
+  padding: clamp(1.4rem, 3.5vw, 2.2rem);
+  transition: background 0.6s ease, border-color 0.6s ease;
+  max-width: 40rem;
 }
+.au-card.is-manual { background: #fdfbf8; border-color: #f0e6d6; }
+.au-card.is-auto { background: #fbfdfc; border-color: var(--ok-line); }
 
-.au-card-top {
-  display: flex; align-items: flex-start; justify-content: space-between;
-  gap: 1rem; margin-bottom: 1.4rem;
+/* Cabecera de tarjeta: switch + indicador de carga */
+.au-card-top { display: flex; align-items: center; justify-content: space-between; gap: 1.2rem; flex-wrap: wrap; }
+
+.au-switch {
+  position: relative; display: inline-flex;
+  background: #f1f1ef; border-radius: 12px; padding: 4px;
 }
-.au-label { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--soft); }
-.au-cap { margin-top: 0.35rem; font-size: 1.05rem; font-weight: 600; letter-spacing: -0.01em; }
-
-/* Reloj */
-.au-clock { text-align: right; }
-.au-clock .t {
-  font-variant-numeric: tabular-nums;
-  font-size: clamp(1.6rem, 4vw, 2.1rem);
-  font-weight: 300; letter-spacing: -0.02em; line-height: 1;
-  transition: color 0.5s ease;
+.au-card.is-manual .au-switch { background: var(--warn-soft); }
+.au-card.is-auto .au-switch { background: var(--ok-soft); }
+.au-switch button {
+  position: relative; z-index: 1; appearance: none; border: 0; background: none; cursor: pointer;
+  font-family: inherit; font-size: 0.9rem; font-weight: 600; color: var(--soft);
+  padding: 0.5rem 1.05rem; border-radius: 9px;
+  transition: color 0.3s ease;
 }
-.au-clock .t.up { color: var(--warn); }
-.au-clock .lbl { margin-top: 0.3rem; font-size: 0.72rem; color: var(--soft); }
-
-/* Lista de tareas */
-.au-tasks { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.55rem; }
-.au-task {
-  display: flex; align-items: center; gap: 0.75rem;
-  padding: 0.8rem 0.9rem;
-  border: 1px solid var(--hair-2);
-  border-radius: 12px;
-  background: #fcfcfb;
-  transition: background 0.5s ease, border-color 0.5s ease, opacity 0.5s ease, transform 0.5s ease;
-}
-.au-task .tick {
-  flex: none; width: 20px; height: 20px; border-radius: 50%;
-  border: 1.5px solid #d7d7d3; background: #fff;
-  display: grid; place-items: center;
-  transition: background 0.4s ease, border-color 0.4s ease, transform 0.4s ease;
-}
-.au-task .tick svg { width: 11px; height: 11px; opacity: 0; transform: scale(0.6); transition: opacity 0.35s ease, transform 0.35s ease; }
-.au-task .name { font-size: 0.95rem; font-weight: 500; transition: color 0.4s ease; }
-.au-task .state { margin-left: auto; font-size: 0.76rem; color: var(--soft); font-weight: 500; transition: color 0.4s ease; }
-
-/* Tarea completada (manual): check neutro, el reloj es el que duele */
-.au-task.done .tick { background: var(--ink); border-color: var(--ink); }
-.au-task.done .tick svg { opacity: 1; transform: scale(1); stroke: #fff; }
-.au-task.done .state { color: var(--soft); }
-
-/* Tarea completada (auto): check verde minimalista, fade suave */
-.au-card.is-auto .au-task.done { background: var(--ok-soft); border-color: #d3ebda; }
-.au-card.is-auto .au-task.done .tick { background: var(--ok); border-color: var(--ok); }
-.au-card.is-auto .au-task.done .name { color: var(--ok); }
-.au-card.is-auto .au-task.done .state { color: var(--ok); }
-
-/* Barra de progreso (auto) */
-.au-progress { height: 4px; border-radius: 99px; background: var(--hair); overflow: hidden; margin: 0.2rem 0 1rem; }
-.au-progress span { display: block; height: 100%; width: 0; border-radius: 99px; background: var(--ok); transition: width 0.12s linear; }
-
-/* Pie de tarjeta / botones */
-.au-foot { margin-top: auto; padding-top: 1.4rem; }
-.au-btn {
-  appearance: none; border: 0; cursor: pointer;
-  font-family: inherit; font-size: 0.92rem; font-weight: 600;
-  color: #fff; background: var(--ink);
-  padding: 0.85rem 1.3rem; border-radius: 12px;
-  display: inline-flex; align-items: center; gap: 0.55rem;
+.au-switch button.on { color: var(--ink); }
+.au-switch-thumb {
+  position: absolute; z-index: 0; top: 4px; bottom: 4px; left: 4px;
+  width: calc(50% - 4px); border-radius: 9px; background: var(--card);
   box-shadow: var(--shadow-sm);
-  transition: transform 0.18s ease, box-shadow 0.25s ease, opacity 0.2s ease;
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), background 0.4s ease;
 }
-.au-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(12, 13, 16, 0.14); }
-.au-btn:active { transform: translateY(0); }
-.au-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
-.au-btn .arrow { font-size: 0.95em; }
+.au-switch-thumb[data-mode='auto'] { transform: translateX(100%); }
 
-/* Botón manual: late para invitar */
-.au-btn.invite { animation: au-pulse 1.7s ease-in-out infinite; }
-@keyframes au-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(12, 13, 16, 0.18); }
-  50% { box-shadow: 0 0 0 8px rgba(12, 13, 16, 0); }
+/* Indicador de carga (estático por estado, sin reloj) */
+.au-load { min-width: 9rem; text-align: right; }
+.au-load-head { display: flex; align-items: baseline; justify-content: flex-end; gap: 0.5rem; }
+.au-load-head .k { font-size: 0.72rem; color: var(--soft); }
+.au-load-tag { font-size: 0.82rem; font-weight: 600; transition: color 0.5s ease; }
+.au-card.is-manual .au-load-tag { color: var(--warn); }
+.au-card.is-auto .au-load-tag { color: var(--ok); }
+.au-load-bar { margin-top: 0.4rem; height: 5px; border-radius: 99px; background: var(--hair); overflow: hidden; }
+.au-load-bar span { display: block; height: 100%; border-radius: 99px; transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1), background 0.6s ease; }
+.au-card.is-manual .au-load-bar span { background: var(--warn); }
+.au-card.is-auto .au-load-bar span { background: var(--ok); }
+
+/* ── Timeline vertical estilo skeleton ─────────────────────────────────── */
+.au-flow { position: relative; margin-top: 1.8rem; padding-left: 1.7rem; }
+.au-line { position: absolute; left: 8px; top: 6px; bottom: 6px; width: 2px; border-radius: 2px; background: var(--hair); overflow: visible; }
+/* Pulso de luz que viaja por el "circuito" al pasar a automático */
+.au-travel {
+  position: absolute; left: -2px; width: 6px; height: 46px; border-radius: 99px;
+  background: linear-gradient(rgba(31, 157, 85, 0), var(--ok) 60%, rgba(31, 157, 85, 0));
+  filter: blur(0.5px); opacity: 0;
+}
+.au-card.is-auto .au-travel { animation: au-travel 1.9s ease-in-out; }
+@keyframes au-travel {
+  0% { top: -46px; opacity: 0; }
+  12% { opacity: 0.9; }
+  88% { opacity: 0.9; }
+  100% { top: 100%; opacity: 0; }
+}
+/* Latido ambiente muy tenue: "trabaja de fondo, en silencio" */
+.au-card.is-auto .au-glow {
+  position: absolute; left: -2px; width: 6px; height: 30px; border-radius: 99px;
+  background: linear-gradient(rgba(31, 157, 85, 0), rgba(31, 157, 85, 0.5), rgba(31, 157, 85, 0));
+  animation: au-travel 6.5s linear 2.2s infinite; opacity: 0;
 }
 
-.au-reset {
-  appearance: none; border: 0; background: none; cursor: pointer;
-  font-family: inherit; font-size: 0.85rem; font-weight: 600; color: var(--soft);
-  padding: 0.4rem 0; display: inline-flex; align-items: center; gap: 0.4rem;
-  transition: color 0.2s ease;
+.au-node { position: relative; display: flex; align-items: flex-start; gap: 0.85rem; padding: 0.75rem 0; }
+.au-node + .au-node { border-top: 1px solid var(--hair-2); }
+.au-dot {
+  position: absolute; left: -1.7rem; top: 1rem; width: 15px; height: 15px; border-radius: 50%;
+  background: var(--card); border: 2px solid #d9d9d5; display: grid; place-items: center;
+  transition: background 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease;
 }
-.au-reset:hover { color: var(--ink); }
-.au-hint { font-size: 0.82rem; color: var(--soft); margin-left: 0.9rem; }
+.au-dot svg { width: 8px; height: 8px; opacity: 0; transform: scale(0.5); transition: opacity 0.4s ease, transform 0.4s ease; }
+/* Manual: punto de alerta ámbar, tenso */
+.au-card.is-manual .au-dot { border-color: var(--warn); background: var(--warn-soft); }
+/* Auto: check verde, se encienden lento y en secuencia (pulso por el circuito) */
+.au-card.is-auto .au-dot { background: var(--ok); border-color: var(--ok); box-shadow: 0 0 0 4px var(--ok-soft); }
+.au-card.is-auto .au-dot svg { opacity: 1; transform: scale(1); stroke: #fff; }
+
+/* Contenido del nodo: cross-fade + slide entre estados */
+.au-node .txt { position: relative; flex: 1; min-height: 2.4em; }
+.au-state { position: absolute; inset-inline: 0; top: 0; transition: opacity 0.5s ease, transform 0.5s ease; }
+.au-state .t { font-size: 0.98rem; font-weight: 500; letter-spacing: -0.01em; }
+.au-state .s { margin-top: 0.15rem; font-size: 0.8rem; font-weight: 600; }
+.au-state.manual .t { color: #2b2b2f; }
+.au-state.manual .s { color: var(--warn); }
+.au-state.auto .t { color: var(--ink); }
+.au-state.auto .s { color: var(--ok); }
+/* Estados ocultos, deslizados */
+.au-card.is-manual .au-state.auto { opacity: 0; transform: translateY(8px); pointer-events: none; }
+.au-card.is-auto .au-state.manual { opacity: 0; transform: translateY(-8px); pointer-events: none; }
 
 /* ── Resumen de ahorro ─────────────────────────────────────────────────── */
 .au-save { margin-top: clamp(3rem, 8vh, 5.5rem); }
 .au-save-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
-  gap: clamp(1.5rem, 6vw, 5rem);
-  align-items: center;
+  display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: clamp(1.5rem, 6vw, 5rem); align-items: center;
 }
 .au-controls { display: flex; flex-direction: column; gap: 1.8rem; }
 .au-control .row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.7rem; }
-.au-control .row .k { font-size: 0.95rem; font-weight: 500; color: var(--ink); }
+.au-control .row .k { font-size: 0.95rem; font-weight: 500; }
 .au-control .row .v { font-variant-numeric: tabular-nums; font-size: 1.05rem; font-weight: 600; }
 
 .au-range { width: 100%; -webkit-appearance: none; appearance: none; background: transparent; cursor: pointer; }
@@ -183,25 +165,25 @@
 .au-range:focus-visible::-webkit-slider-thumb { outline: 2px solid var(--ink); outline-offset: 2px; }
 
 .au-result { border-left: 1px solid var(--hair); padding-left: clamp(1.5rem, 5vw, 4rem); }
-.au-result .pre { font-size: 0.82rem; color: var(--soft); letter-spacing: 0.02em; margin-bottom: 0.6rem; }
-.au-figure { display: flex; align-items: baseline; gap: 0.35rem; line-height: 0.95; }
-.au-figure .n {
-  font-variant-numeric: tabular-nums;
-  font-size: clamp(3.6rem, 12vw, 7rem);
-  font-weight: 200; letter-spacing: -0.04em; color: var(--ink);
-}
-.au-figure .u { font-size: clamp(1.2rem, 3vw, 1.8rem); font-weight: 300; color: var(--soft); }
-.au-result .days { margin-top: 0.7rem; font-size: 1.05rem; color: var(--soft); }
-.au-result .days b { color: var(--ink); font-weight: 600; }
+.au-result .pre { font-size: 0.82rem; color: var(--soft); letter-spacing: 0.02em; margin-bottom: 0.5rem; }
+.au-figure { display: flex; align-items: baseline; gap: 0.4rem; line-height: 0.95; }
+.au-figure .n { font-variant-numeric: tabular-nums; font-size: clamp(3.6rem, 12vw, 7rem); font-weight: 200; letter-spacing: -0.04em; }
+.au-figure .u { font-size: clamp(1.1rem, 3vw, 1.7rem); font-weight: 300; color: var(--soft); }
+.au-result .ctx { margin-top: 0.8rem; font-size: 1.05rem; color: var(--soft); max-width: 24rem; }
+.au-result .ctx b { color: var(--ink); font-weight: 600; }
 
 @media (prefers-reduced-motion: reduce) {
-  .au-btn.invite { animation: none; }
-  .au-task, .au-task .tick, .au-progress span, .au-clock .t { transition: none; }
+  .au-card.is-auto .au-travel, .au-card.is-auto .au-glow { animation: none; opacity: 0; }
+  .au-card, .au-switch-thumb, .au-load-bar span, .au-dot, .au-dot svg, .au-state, .au-load-tag { transition: none; }
 }
 
 /* ── Responsive ────────────────────────────────────────────────────────── */
 @media (max-width: 760px) {
-  .au-cols { grid-template-columns: 1fr; }
+  .au-card { max-width: none; }
+  .au-card-top { flex-direction: column; align-items: stretch; }
+  .au-switch { align-self: flex-start; }
+  .au-load { text-align: left; }
+  .au-load-head { justify-content: flex-start; }
   .au-save-grid { grid-template-columns: 1fr; gap: 2.2rem; }
   .au-result { border-left: 0; padding-left: 0; border-top: 1px solid var(--hair); padding-top: 1.8rem; }
 }
