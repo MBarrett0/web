@@ -137,10 +137,10 @@ const slots = [
     resetSim();
 
     const tl = gsap.timeline({ paused: true, defaults: { ease: 'power2.out' } });
-    // el calendario se desliza desde atrás del teléfono hacia su lugar
-    tl.to(cal, { x: 0, y: 0, autoAlpha: 1, duration: 0.9, ease: 'power3.out' }, 0.2)
-      .to(msgs[0], { autoAlpha: 1, y: 0, duration: 0.5 }, '+=0.4')
-      .to(typings[0], { autoAlpha: 1, duration: 0.25 }, '+=0.7')
+    tl.to(msgs[0], { autoAlpha: 1, y: 0, duration: 0.5 }, 0.4)
+      // recién con la pregunta del jueves, el calendario se desliza desde atrás del teléfono
+      .to(cal, { x: 0, y: 0, autoAlpha: 1, duration: 0.9, ease: 'power3.out' }, '+=0.5')
+      .to(typings[0], { autoAlpha: 1, duration: 0.25 }, '+=0.4')
       // el calendario reacciona mientras el bot "escribe"
       .to(calMonth, { xPercent: -10, autoAlpha: 0, duration: 0.45, ease: 'power2.in' }, '+=0.5')
       .to(calDay, { xPercent: 0, autoAlpha: 1, duration: 0.5 }, '-=0.1')
@@ -174,14 +174,17 @@ const slots = [
   .side { flex: 1 1 20rem; }
   .wa-duo {
     flex: 1 1 30rem; display: flex; gap: clamp(1rem, 2.5vw, 1.8rem);
-    align-items: center; justify-content: center; flex-wrap: wrap;
+    align-items: center; justify-content: center; flex-wrap: nowrap;
     position: relative; /* host del clon viajero */
   }
+  /* solo en pantallas angostas el calendario baja debajo del teléfono */
+  @media (max-width: 40rem) { .wa-duo { flex-wrap: wrap; } }
   .wa-phone {
     flex: 0 1 21rem;
     background: #0b141a; border: 1px solid var(--line); border-radius: 1.6rem;
     overflow: hidden; box-shadow: 0 30px 60px rgb(0 0 0 / 0.45);
     width: min(21rem, 100%);
+    min-width: 0;
     position: relative; z-index: 2; /* el calendario se desliza por detrás */
   }
   .wa-top {
@@ -207,6 +210,7 @@ const slots = [
     background: #0b141a; border: 1px solid var(--line); border-radius: 1.2rem;
     box-shadow: 0 30px 60px rgb(0 0 0 / 0.45);
     padding: 1rem 0.9rem 1.1rem;
+    min-width: 0;
     position: relative; z-index: 1;
   }
   .wa-cal-screens { position: relative; }
