@@ -4,7 +4,7 @@ test('whatsapp: la conversación se reproduce sola al entrar en viewport', async
   await page.goto('/web/');
   await page.locator('#whatsapp .wa-phone').scrollIntoViewIfNeeded();
   const last = page.locator('#whatsapp .wa-chat .wa-msg').last();
-  await expect(last).toBeVisible({ timeout: 18000 });
+  await expect(last).toBeVisible({ timeout: 22000 });
   // El último mensaje ya es visible; solo falta que termine su tween de entrada (0.5s)
   await page.waitForTimeout(2500);
   const op = await last.evaluate((el) => Number(getComputedStyle(el).opacity));
@@ -46,6 +46,7 @@ test('whatsapp: con reduced motion el calendario muestra el día con la reserva 
   await page.locator('#whatsapp .wa-cal').scrollIntoViewIfNeeded();
   await expect(page.locator('#whatsapp .wa-cal-day')).toBeVisible();
   await expect(page.locator('#whatsapp .wa-booking')).toBeVisible();
+  await expect(page.locator('#whatsapp .wa-detail')).toBeVisible();
   await expect(page.locator('#whatsapp .wa-cal-month')).toBeHidden();
   // el tag "libre" del slot 15:00 queda oculto cuando está reservado
   await expect(page.locator('#whatsapp .wa-slot.target .tag')).toBeHidden();
@@ -56,7 +57,10 @@ test('whatsapp: la reserva aterriza en el slot 15:00 y el clon desaparece', asyn
   await page.locator('#whatsapp .wa-phone').scrollIntoViewIfNeeded();
   const booking = page.locator('#whatsapp .wa-booking');
   await expect(booking).toBeVisible({ timeout: 25000 });
-  await page.waitForTimeout(2000); // el clon termina de desvanecerse
+  // clic simulado: la tarjeta con los datos de la reserva se abre sola
+  await expect(page.locator('#whatsapp .wa-detail')).toBeVisible({ timeout: 6000 });
+  await expect(page.locator('#whatsapp .wa-detail')).toContainText('Camila Suárez');
+  await page.waitForTimeout(1000); // el clon termina de desvanecerse
   await expect(page.locator('#whatsapp .wa-fly')).toHaveCount(0);
   await expect(page.locator('#whatsapp .wa-slot.target')).toHaveClass(/booked/);
 });
