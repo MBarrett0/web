@@ -5,10 +5,22 @@ test('whatsapp: la conversación se reproduce sola al entrar en viewport', async
   await page.locator('#whatsapp .wa-phone').scrollIntoViewIfNeeded();
   const last = page.locator('#whatsapp .wa-chat .wa-msg').last();
   await expect(last).toBeVisible({ timeout: 15000 });
-  // Wait for animation to complete (timeline is ~5.05s, plus time for trigger to fire)
-  await page.waitForTimeout(6000);
+  // Wait for animation to complete (timeline is ~6.4s, plus time for trigger to fire)
+  await page.waitForTimeout(9000);
   const op = await last.evaluate((el) => Number(getComputedStyle(el).opacity));
   expect(op).toBeGreaterThan(0.9);
+});
+
+test('whatsapp: el calendario transiciona de mes a día durante la conversación', async ({ page }) => {
+  await page.goto('/web/');
+  await page.locator('#whatsapp .wa-phone').scrollIntoViewIfNeeded();
+  // Con motion, el script arranca mostrando el Mes y ocultando el Día
+  const month = page.locator('#whatsapp .wa-cal-month');
+  const day = page.locator('#whatsapp .wa-cal-day');
+  await expect(month).toBeVisible({ timeout: 5000 });
+  // La transición Mes→Día ocurre dentro del timeline
+  await expect(day).toBeVisible({ timeout: 15000 });
+  await expect(month).toBeHidden();
 });
 
 test('whatsapp: sin JS-animación (reduced motion) todo el chat es visible', async ({ page }) => {

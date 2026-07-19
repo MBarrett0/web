@@ -66,15 +66,35 @@ const slots = [
   import { gsap, ScrollTrigger, prefersReducedMotion } from '../lib/gsap';
 
   if (!prefersReducedMotion()) {
-    const msgs = gsap.utils.toArray<HTMLElement>('#whatsapp .wa-msg');
+    const msgs = gsap.utils.toArray<HTMLElement>('#whatsapp .wa-chat .wa-msg');
     const typings = gsap.utils.toArray<HTMLElement>('#whatsapp .wa-typing');
+    const calMonth = document.querySelector<HTMLElement>('#whatsapp .wa-cal-month')!;
+    const calDay = document.querySelector<HTMLElement>('#whatsapp .wa-cal-day')!;
+    const freeSlots = gsap.utils.toArray<HTMLElement>('#whatsapp .wa-slot.free');
+    const targetSlot = document.querySelector<HTMLElement>('#whatsapp .wa-slot.target')!;
+
     gsap.set(msgs, { autoAlpha: 0, y: 14 });
     gsap.set(typings, { autoAlpha: 0 });
+    gsap.set(calMonth, { autoAlpha: 1, xPercent: 0 });
+    gsap.set(calDay, { autoAlpha: 0, xPercent: 10 });
+
+    function resetSim() {
+      targetSlot.classList.remove('booked');
+    }
+    resetSim();
 
     const tl = gsap.timeline({ paused: true, defaults: { ease: 'power2.out' } });
     tl.to(msgs[0], { autoAlpha: 1, y: 0, duration: 0.45 }, 0.3)
       .to(typings[0], { autoAlpha: 1, duration: 0.2 }, '+=0.5')
-      .to(typings[0], { autoAlpha: 0, duration: 0.2 }, '+=1.1')
+      // el calendario reacciona mientras el bot "escribe"
+      .to(calMonth, { xPercent: -10, autoAlpha: 0, duration: 0.35, ease: 'power2.in' }, '+=0.3')
+      .to(calDay, { xPercent: 0, autoAlpha: 1, duration: 0.4 }, '-=0.1')
+      // flash verde escalonado de los horarios libres
+      .to(freeSlots, {
+        backgroundColor: 'rgba(37, 211, 102, 0.28)',
+        duration: 0.22, stagger: 0.18, repeat: 1, yoyo: true,
+      }, '+=0.15')
+      .to(typings[0], { autoAlpha: 0, duration: 0.2 }, '+=0.3')
       .to(msgs[1], { autoAlpha: 1, y: 0, duration: 0.45 }, '<')
       .to(msgs[2], { autoAlpha: 1, y: 0, duration: 0.45 }, '+=1.0')
       .to(typings[1], { autoAlpha: 1, duration: 0.2 }, '+=0.4')
@@ -84,8 +104,8 @@ const slots = [
     ScrollTrigger.create({
       trigger: '#whatsapp .wa-phone',
       start: 'top 70%',
-      onEnter: () => tl.restart(),
-      onEnterBack: () => tl.restart(),
+      onEnter: () => { resetSim(); tl.restart(); },
+      onEnterBack: () => { resetSim(); tl.restart(); },
     });
   }
 </script>
