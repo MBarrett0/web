@@ -4,9 +4,9 @@ test('whatsapp: la conversación se reproduce sola al entrar en viewport', async
   await page.goto('/web/');
   await page.locator('#whatsapp .wa-phone').scrollIntoViewIfNeeded();
   const last = page.locator('#whatsapp .wa-chat .wa-msg').last();
-  await expect(last).toBeVisible({ timeout: 15000 });
-  // Wait for animation to complete (timeline is ~6.4s, plus time for trigger to fire)
-  await page.waitForTimeout(9000);
+  await expect(last).toBeVisible({ timeout: 18000 });
+  // El último mensaje ya es visible; solo falta que termine su tween de entrada (0.5s)
+  await page.waitForTimeout(2500);
   const op = await last.evaluate((el) => Number(getComputedStyle(el).opacity));
   expect(op).toBeGreaterThan(0.9);
 });
@@ -55,8 +55,8 @@ test('whatsapp: la reserva aterriza en el slot 15:00 y el clon desaparece', asyn
   await page.goto('/web/');
   await page.locator('#whatsapp .wa-phone').scrollIntoViewIfNeeded();
   const booking = page.locator('#whatsapp .wa-booking');
-  await expect(booking).toBeVisible({ timeout: 20000 });
-  await page.waitForTimeout(1500); // el clon termina de desvanecerse
+  await expect(booking).toBeVisible({ timeout: 25000 });
+  await page.waitForTimeout(2000); // el clon termina de desvanecerse
   await expect(page.locator('#whatsapp .wa-fly')).toHaveCount(0);
   await expect(page.locator('#whatsapp .wa-slot.target')).toHaveClass(/booked/);
 });

@@ -73,6 +73,8 @@ const slots = [
     const freeSlots = gsap.utils.toArray<HTMLElement>('#whatsapp .wa-slot.free');
     const targetSlot = document.querySelector<HTMLElement>('#whatsapp .wa-slot.target')!;
     const duo = document.querySelector<HTMLElement>('#whatsapp .wa-duo')!;
+    const cal = document.querySelector<HTMLElement>('#whatsapp .wa-cal')!;
+    const phone = document.querySelector<HTMLElement>('#whatsapp .wa-phone')!;
     let flyTl: gsap.core.Timeline | null = null;
 
     function cleanupFly() {
@@ -105,24 +107,28 @@ const slots = [
         .to(clone, {
           left: to.left - base.left, top: to.top - base.top,
           width: to.width, height: to.height, borderRadius: '0.55rem',
-          duration: 0.55, ease: 'power3.inOut',
+          duration: 0.7, ease: 'power3.inOut',
         }, 0)
         // leve arco
-        .to(clone, { y: -26, duration: 0.28, ease: 'power2.out' }, 0)
-        .to(clone, { y: 0, duration: 0.27, ease: 'power2.in' }, 0.28)
+        .to(clone, { y: -26, duration: 0.36, ease: 'power2.out' }, 0)
+        .to(clone, { y: 0, duration: 0.34, ease: 'power2.in' }, 0.36)
         // aterrizaje: aparece la reserva real + flash verde, el clon se desvanece
-        .add(() => targetSlot.classList.add('booked'), 0.55)
+        .add(() => targetSlot.classList.add('booked'), 0.7)
         .fromTo(targetSlot,
           { backgroundColor: 'rgba(37, 211, 102, 0.35)' },
           { backgroundColor: 'rgba(37, 211, 102, 0)', duration: 0.7, clearProps: 'backgroundColor' },
-          0.55)
-        .to(clone, { autoAlpha: 0, duration: 0.25 }, 0.55);
+          0.7)
+        .to(clone, { autoAlpha: 0, duration: 0.25 }, 0.7);
     }
 
     gsap.set(msgs, { autoAlpha: 0, y: 14 });
     gsap.set(typings, { autoAlpha: 0 });
     gsap.set(calMonth, { autoAlpha: 1, xPercent: 0 });
     gsap.set(calDay, { autoAlpha: 0, xPercent: 10 });
+    // el calendario arranca escondido detrás del teléfono (deltas relativos, valen en fila o apilado)
+    const calRect = cal.getBoundingClientRect();
+    const phoneRect = phone.getBoundingClientRect();
+    gsap.set(cal, { x: phoneRect.left - calRect.left, y: phoneRect.top - calRect.top, autoAlpha: 0 });
 
     function resetSim() {
       cleanupFly();
@@ -131,23 +137,29 @@ const slots = [
     resetSim();
 
     const tl = gsap.timeline({ paused: true, defaults: { ease: 'power2.out' } });
-    tl.to(msgs[0], { autoAlpha: 1, y: 0, duration: 0.45 }, 0.3)
-      .to(typings[0], { autoAlpha: 1, duration: 0.2 }, '+=0.5')
+    // el calendario se desliza desde atrás del teléfono hacia su lugar
+    tl.to(cal, { x: 0, y: 0, autoAlpha: 1, duration: 0.9, ease: 'power3.out' }, 0.2)
+      .to(msgs[0], { autoAlpha: 1, y: 0, duration: 0.5 }, '+=0.4')
+      .to(typings[0], { autoAlpha: 1, duration: 0.25 }, '+=0.7')
       // el calendario reacciona mientras el bot "escribe"
-      .to(calMonth, { xPercent: -10, autoAlpha: 0, duration: 0.35, ease: 'power2.in' }, '+=0.3')
-      .to(calDay, { xPercent: 0, autoAlpha: 1, duration: 0.4 }, '-=0.1')
-      // flash verde escalonado de los horarios libres
+      .to(calMonth, { xPercent: -10, autoAlpha: 0, duration: 0.45, ease: 'power2.in' }, '+=0.5')
+      .to(calDay, { xPercent: 0, autoAlpha: 1, duration: 0.5 }, '-=0.1')
+      // los horarios libres se encienden escalonados y se apagan todos juntos
       .to(freeSlots, {
         backgroundColor: 'rgba(37, 211, 102, 0.28)',
-        duration: 0.22, stagger: 0.18, repeat: 1, yoyo: true,
-      }, '+=0.15')
-      .to(typings[0], { autoAlpha: 0, duration: 0.2 }, '+=0.3')
-      .to(msgs[1], { autoAlpha: 1, y: 0, duration: 0.45 }, '<')
-      .to(msgs[2], { autoAlpha: 1, y: 0, duration: 0.45 }, '+=1.0')
-      .to(typings[1], { autoAlpha: 1, duration: 0.2 }, '+=0.4')
-      .to(typings[1], { autoAlpha: 0, duration: 0.2 }, '+=0.9')
-      .to(msgs[3], { autoAlpha: 1, y: 0, duration: 0.45 }, '<')
-      .add(() => runMorph(), '+=0.45');
+        duration: 0.35, stagger: 0.3,
+      }, '+=0.35')
+      .to(freeSlots, {
+        backgroundColor: 'rgba(37, 211, 102, 0)',
+        duration: 0.5, clearProps: 'backgroundColor',
+      }, '+=0.75')
+      .to(typings[0], { autoAlpha: 0, duration: 0.25 }, '<')
+      .to(msgs[1], { autoAlpha: 1, y: 0, duration: 0.5 }, '<')
+      .to(msgs[2], { autoAlpha: 1, y: 0, duration: 0.5 }, '+=1.3')
+      .to(typings[1], { autoAlpha: 1, duration: 0.25 }, '+=0.5')
+      .to(typings[1], { autoAlpha: 0, duration: 0.25 }, '+=1.1')
+      .to(msgs[3], { autoAlpha: 1, y: 0, duration: 0.5 }, '<')
+      .add(() => runMorph(), '+=0.6');
 
     ScrollTrigger.create({
       trigger: '#whatsapp .wa-phone',
@@ -170,6 +182,7 @@ const slots = [
     background: #0b141a; border: 1px solid var(--line); border-radius: 1.6rem;
     overflow: hidden; box-shadow: 0 30px 60px rgb(0 0 0 / 0.45);
     width: min(21rem, 100%);
+    position: relative; z-index: 2; /* el calendario se desliza por detrás */
   }
   .wa-top {
     display: flex; align-items: center; gap: 0.6rem;
@@ -194,6 +207,7 @@ const slots = [
     background: #0b141a; border: 1px solid var(--line); border-radius: 1.2rem;
     box-shadow: 0 30px 60px rgb(0 0 0 / 0.45);
     padding: 1rem 0.9rem 1.1rem;
+    position: relative; z-index: 1;
   }
   .wa-cal-screens { position: relative; }
   .wa-cal-title { font-weight: 600; font-size: 0.9rem; margin-bottom: 0.7rem; }
