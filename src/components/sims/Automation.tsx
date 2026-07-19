@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import './automation.css';
 
 const prefersReducedMotion = (): boolean =>
@@ -67,6 +67,8 @@ export default function Automation() {
 
   const isAuto = mode === 'auto';
   const load = isAuto ? 8 : 85;
+  const turnosFill = ((turnos - 5) / (200 - 5)) * 100;
+  const minutosFill = ((minutos - 2) / (30 - 2)) * 100;
 
   return (
     <section id="automatizacion" className="au" ref={root}>
@@ -74,7 +76,7 @@ export default function Automation() {
         <header className="au-head">
           <p className="au-kicker">Automatización de servicios</p>
           <h2 className="au-title">
-            Un día cualquiera del negocio, <b>con y sin el sistema andando.</b>
+            <span className="lead">Un día cualquiera del negocio,</span> con y sin el sistema andando.
           </h2>
           <p className="au-sub">
             Movés el interruptor y ves el mismo día de dos maneras: el que corrés vos a mano
@@ -126,8 +128,8 @@ export default function Automation() {
           </div>
         </div>
 
-        {/* ── Resumen de ahorro ── */}
-        <div className="au-save">
+        {/* ── Resumen de ahorro (tarjeta aparte) ── */}
+        <div className="au-card">
           <div className="au-save-grid">
             <div className="au-controls">
               <div className="au-control">
@@ -138,6 +140,7 @@ export default function Automation() {
                 <input
                   className="au-range" type="range" min={5} max={200} step={5}
                   value={turnos} onChange={(e) => setTurnos(Number(e.target.value))}
+                  style={{ '--fill': `${turnosFill}%` } as CSSProperties}
                   aria-label="Turnos por semana"
                 />
               </div>
@@ -149,6 +152,7 @@ export default function Automation() {
                 <input
                   className="au-range" type="range" min={2} max={30} step={1}
                   value={minutos} onChange={(e) => setMinutos(Number(e.target.value))}
+                  style={{ '--fill': `${minutosFill}%` } as CSSProperties}
                   aria-label="Minutos por turno a mano"
                 />
               </div>
