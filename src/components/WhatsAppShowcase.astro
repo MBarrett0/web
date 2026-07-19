@@ -18,6 +18,7 @@ import SectionCta from './SectionCta.astro';
         <p class="wa-typing" aria-hidden="true"><span></span><span></span><span></span></p>
         <p class="wa-msg bot">¡Hola! Sí — el jueves tengo <strong>10:30</strong>, <strong>15:00</strong> y <strong>18:30</strong>. ¿Cuál te queda mejor?</p>
         <p class="wa-msg user">15:00 👌</p>
+        <p class="wa-typing" aria-hidden="true"><span></span><span></span><span></span></p>
         <p class="wa-msg bot card">✓ <strong>Turno confirmado</strong><br />Jueves · 15:00<br /><small>Te llega un recordatorio el miércoles.</small></p>
       </div>
     </div>
@@ -28,18 +29,18 @@ import SectionCta from './SectionCta.astro';
 
   if (!prefersReducedMotion()) {
     const msgs = gsap.utils.toArray<HTMLElement>('#whatsapp .wa-msg');
-    const typing = document.querySelector<HTMLElement>('#whatsapp .wa-typing')!;
+    const typings = gsap.utils.toArray<HTMLElement>('#whatsapp .wa-typing');
     gsap.set(msgs, { autoAlpha: 0, y: 14 });
-    gsap.set(typing, { autoAlpha: 0 });
+    gsap.set(typings, { autoAlpha: 0 });
 
     const tl = gsap.timeline({ paused: true, defaults: { ease: 'power2.out' } });
     tl.to(msgs[0], { autoAlpha: 1, y: 0, duration: 0.45 }, 0.3)
-      .to(typing, { autoAlpha: 1, duration: 0.2 }, '+=0.5')
-      .to(typing, { autoAlpha: 0, duration: 0.2 }, '+=1.1')
+      .to(typings[0], { autoAlpha: 1, duration: 0.2 }, '+=0.5')
+      .to(typings[0], { autoAlpha: 0, duration: 0.2 }, '+=1.1')
       .to(msgs[1], { autoAlpha: 1, y: 0, duration: 0.45 }, '<')
       .to(msgs[2], { autoAlpha: 1, y: 0, duration: 0.45 }, '+=1.0')
-      .to(typing, { autoAlpha: 1, duration: 0.2 }, '+=0.4')
-      .to(typing, { autoAlpha: 0, duration: 0.2 }, '+=0.9')
+      .to(typings[1], { autoAlpha: 1, duration: 0.2 }, '+=0.4')
+      .to(typings[1], { autoAlpha: 0, duration: 0.2 }, '+=0.9')
       .to(msgs[3], { autoAlpha: 1, y: 0, duration: 0.45 }, '<');
 
     ScrollTrigger.create({
