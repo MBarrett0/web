@@ -50,3 +50,13 @@ test('whatsapp: con reduced motion el calendario muestra el día con la reserva 
   // el tag "libre" del slot 15:00 queda oculto cuando está reservado
   await expect(page.locator('#whatsapp .wa-slot.target .tag')).toBeHidden();
 });
+
+test('whatsapp: la reserva aterriza en el slot 15:00 y el clon desaparece', async ({ page }) => {
+  await page.goto('/web/');
+  await page.locator('#whatsapp .wa-phone').scrollIntoViewIfNeeded();
+  const booking = page.locator('#whatsapp .wa-booking');
+  await expect(booking).toBeVisible({ timeout: 20000 });
+  await page.waitForTimeout(1500); // el clon termina de desvanecerse
+  await expect(page.locator('#whatsapp .wa-fly')).toHaveCount(0);
+  await expect(page.locator('#whatsapp .wa-slot.target')).toHaveClass(/booked/);
+});

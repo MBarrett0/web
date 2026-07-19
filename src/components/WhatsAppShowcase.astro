@@ -72,6 +72,51 @@ const slots = [
     const calDay = document.querySelector<HTMLElement>('#whatsapp .wa-cal-day')!;
     const freeSlots = gsap.utils.toArray<HTMLElement>('#whatsapp .wa-slot.free');
     const targetSlot = document.querySelector<HTMLElement>('#whatsapp .wa-slot.target')!;
+    const duo = document.querySelector<HTMLElement>('#whatsapp .wa-duo')!;
+    let flyTl: gsap.core.Timeline | null = null;
+
+    function cleanupFly() {
+      flyTl?.kill();
+      flyTl = null;
+      duo.querySelector('.wa-fly')?.remove();
+    }
+
+    function runMorph() {
+      cleanupFly();
+      const card = msgs[3];
+      const from = card.getBoundingClientRect();
+      const to = targetSlot.getBoundingClientRect();
+      const base = duo.getBoundingClientRect();
+
+      const clone = card.cloneNode(true) as HTMLElement;
+      clone.classList.add('wa-fly');
+      clone.setAttribute('aria-hidden', 'true');
+      duo.appendChild(clone);
+      gsap.set(clone, {
+        position: 'absolute', margin: 0, zIndex: 5,
+        left: from.left - base.left, top: from.top - base.top,
+        width: from.width, height: from.height,
+      });
+
+      flyTl = gsap.timeline({ onComplete: cleanupFly });
+      flyTl
+        // trayecto + cambio de forma (FLIP manual)
+        .to(clone, {
+          left: to.left - base.left, top: to.top - base.top,
+          width: to.width, height: to.height, borderRadius: '0.55rem',
+          duration: 0.55, ease: 'power3.inOut',
+        }, 0)
+        // leve arco
+        .to(clone, { y: -26, duration: 0.28, ease: 'power2.out' }, 0)
+        .to(clone, { y: 0, duration: 0.27, ease: 'power2.in' }, 0.28)
+        // aterrizaje: aparece la reserva real + flash verde, el clon se desvanece
+        .add(() => targetSlot.classList.add('booked'), 0.55)
+        .fromTo(targetSlot,
+          { backgroundColor: 'rgba(37, 211, 102, 0.35)' },
+          { backgroundColor: 'rgba(37, 211, 102, 0)', duration: 0.7, clearProps: 'backgroundColor' },
+          0.55)
+        .to(clone, { autoAlpha: 0, duration: 0.25 }, 0.55);
+    }
 
     gsap.set(msgs, { autoAlpha: 0, y: 14 });
     gsap.set(typings, { autoAlpha: 0 });
@@ -79,6 +124,7 @@ const slots = [
     gsap.set(calDay, { autoAlpha: 0, xPercent: 10 });
 
     function resetSim() {
+      cleanupFly();
       targetSlot.classList.remove('booked');
     }
     resetSim();
@@ -99,7 +145,8 @@ const slots = [
       .to(msgs[2], { autoAlpha: 1, y: 0, duration: 0.45 }, '+=1.0')
       .to(typings[1], { autoAlpha: 1, duration: 0.2 }, '+=0.4')
       .to(typings[1], { autoAlpha: 0, duration: 0.2 }, '+=0.9')
-      .to(msgs[3], { autoAlpha: 1, y: 0, duration: 0.45 }, '<');
+      .to(msgs[3], { autoAlpha: 1, y: 0, duration: 0.45 }, '<')
+      .add(() => runMorph(), '+=0.45');
 
     ScrollTrigger.create({
       trigger: '#whatsapp .wa-phone',
@@ -170,4 +217,5 @@ const slots = [
   .wa-slot.target:not(.booked) .wa-booking { display: none; }
   .wa-slot.target.booked .tag { display: none; }
   .wa-slot.target.booked { border-color: rgba(37, 211, 102, 0.45); }
+  .wa-fly { pointer-events: none; overflow: hidden; box-shadow: 0 18px 40px rgb(0 0 0 / 0.5); }
 </style>
