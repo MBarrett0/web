@@ -4,7 +4,7 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import Hero from '../components/Hero.astro';
 import Services from '../components/Services.astro';
-import BeforeAfter from '../components/sims/BeforeAfter';
+import Automation from '../components/sims/Automation';
 import WhatsAppShowcase from '../components/WhatsAppShowcase.astro';
 import TurnosShowcase from '../components/TurnosShowcase.astro';
 import WebSection from '../components/WebSection.astro';
@@ -22,7 +22,7 @@ import Contact from '../components/Contact.astro';
   <main>
     <Hero />
     <Services />
-    <BeforeAfter client:visible={{ rootMargin: '600px' }} />
+    <Automation client:visible={{ rootMargin: '600px' }} />
     <WhatsAppShowcase />
     <TurnosShowcase />
     <WebSection />

@@ -1,48 +1,48 @@
-# Landing de servicios de desarrollo
+# Software development services landing page
 
-Landing page one-pager para ofrecer servicios de desarrollo de software a PyMEs:
-automatización de servicios, reservas por WhatsApp, gestión de turnos y creación
-de páginas web. Objetivo: máxima conversión de clientes no técnicos, estética
-"Dark Tech Premium" muy llamativa, simulaciones fluidas con sensación premium.
+One-pager landing page to offer software development services to SMEs:
+service automation, WhatsApp booking, appointment management, and website
+creation. Goal: maximum conversion of non-technical clients, striking
+"Dark Tech Premium" aesthetic, fluid simulations with a premium feel.
 
 ## Stack
 
-- **Astro** (`output: 'static'`) — esqueleto y contenido. HTML estático por defecto, cero JS innecesario.
-- **React** — solo como islands (`client:visible`) en las 2 simulaciones interactivas: laptop 3D y comparador antes/después.
-- **GSAP + ScrollTrigger** — script global compartido (fuera de React) para todas las animaciones de scroll/entrada y los showcases pasivos.
-- **three.js vía React Three Fiber + drei** — únicamente dentro de la isla del laptop 3D.
-- **Content Collections** de Astro para caso de éxito y FAQ (escalar contenido = agregar archivos, no tocar código).
-- **Tipografía: Satoshi** (Fontshare), self-hosteada en woff2.
-- **Formulario de contacto: Web3Forms** (sitio estático, sin backend).
+- **Astro** (`output: 'static'`) — skeleton and content. Static HTML by default, zero unnecessary JS.
+- **React** — only as islands (`client:visible`) in the 2 interactive simulations: 3D laptop and the manual-vs-automated automation sim.
+- **GSAP + ScrollTrigger** — shared global script (outside React) for all scroll/entrance animations and passive showcases.
+- **three.js via React Three Fiber + drei** — only inside the 3D laptop island.
+- **Astro Content Collections** for the success story and FAQ (scaling content = adding files, not touching code).
+- **Typography: Satoshi** (Fontshare), self-hosted in woff2.
+- **Contact form: Web3Forms** (static site, no backend).
 
 ## Deploy
 
 - **GitHub Pages** — repo: https://github.com/MBarrett0/web
-- Build 100% estático. Deploy vía GitHub Actions en push a `main`.
-- Ojo con `site`/`base` en `astro.config.mjs`: project page sirve bajo `/web/`.
+- 100% static build. Deployed via GitHub Actions on push to `main`.
+- Watch out for `site`/`base` in `astro.config.mjs`: project page is served under `/web/`.
 
-## Reglas de diseño (NO negociables)
+## Design rules (NON-negotiable)
 
-- **100% responsive** en todos los dispositivos. El 3D corre completo en mobile con calidad adaptativa (DPR clamp, detección de capacidad) — no fallback 2D.
-- **Nunca** verse como "producto hecho con IA": nada de blobs 3D vacíos, stock photos, ni estética SaaS genérica.
-- **No usar "cells"**: nada de layouts a base de cajas uniformes repetidas.
-- **No cookie-cutter grids**: nada de grillas genéricas de columnas iguales para servicios/features — layouts editoriales/asimétricos.
-- **Gradientes con moderación**: nunca como empapelado decorativo por defecto.
-- **Floating glass cards: preguntar al usuario antes de usarlas.** No asumirlas.
-- **Copy sin frases cliché** ("llevá tu negocio al siguiente nivel", etc.). Voseo rioplatense. El usuario reemplazará el copy final — dejar textos realistas y fáciles de ubicar.
-- **Interacción pasiva primero**: las simulaciones se manejan con scroll/hover, nunca obligar al cliente a arrastrar u "operar" widgets. Cero fricción.
-- `prefers-reduced-motion`: mostrar estados finales estáticos.
-- Fallback estático prolijo solo si no hay WebGL (error handling, no downgrade por dispositivo).
+- **100% responsive** on all devices. 3D runs in full on mobile with adaptive quality (DPR clamp, capability detection) — no 2D fallback.
+- **Never** look like an "AI-made product": no empty 3D blobs, stock photos, or generic SaaS aesthetics.
+- **No "cells"**: no layouts based on uniform repeated boxes.
+- **No cookie-cutter grids**: no generic equal-column grids for services/features — editorial/asymmetric layouts.
+- **Gradients in moderation**: never as default decorative wallpaper.
+- **Floating glass cards: ask the user before using them.** Do not assume them.
+- **Copy without cliché phrases** ("take your business to the next level", etc.). The user will replace the final copy — leave realistic, easy-to-identify placeholder text.
+- **Passive interaction first**: simulations are driven by scroll/hover, never force the client to drag or "operate" widgets. Zero friction.
+- `prefers-reduced-motion`: show static final states.
+- Clean static fallback only if there's no WebGL (error handling, not a device-based downgrade).
 
-## Decisiones de producto
+## Product decisions
 
-- Público: generalista, cualquier PyME con atención al público. Lenguaje no técnico siempre.
-- One-pager: todo (incl. planes) es sección del Home con navegación por anclas.
-- Planes sin montos — todo "a cotizar"; el CTA precarga el plan en el formulario.
-- Único caso real: Protección Choferes (https://proteccionchoferes.org.uy). No inventar testimonios.
-- Marca: placeholder por ahora (el usuario la define después).
-- CTA principal: formulario de contacto (no WhatsApp).
+- Audience: general, any SME with customer-facing operations. Always non-technical language.
+- One-pager: everything (incl. plans) is a section of the Home with anchor navigation.
+- Plans have no prices — everything is "quote on request"; the CTA preloads the plan into the form.
+- Only real case study: Protección Choferes (https://proteccionchoferes.org.uy). Do not invent testimonials.
+- Brand: placeholder for now (the user will define it later).
+- Main CTA: contact form (not WhatsApp).
 
-## Documentos
+## Documents
 
-- Spec de diseño: `docs/superpowers/specs/2026-07-18-landing-dev-services-design.md`
+- Design spec: `docs/superpowers/specs/2026-07-18-landing-dev-services-design.md`
