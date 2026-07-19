@@ -1,6 +1,7 @@
 /* ───────────────────────────────────────────────────────────────────────
    Automatización de servicios — isla clara premium (Metalab / Pixel Point)
-   Escena "Tormenta que se disipa": el caos manual colapsa en calma automática.
+   Notificaciones que se acumulan a la izquierda → botón "Automatizar" a la
+   derecha → todo se ordena y se resuelve. Calculadora: mes / año / 5 años.
    ─────────────────────────────────────────────────────────────────────── */
 .au {
   --paper: #f9f9fb;
@@ -16,10 +17,8 @@
   --ok: #1f9d55;
   --ok-soft: #edf7f0;
 
-  /* ease-out-expo, 500ms — la curva de lujo en toda la sección */
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
   --dur: 520ms;
-
   --glow: 0 8px 30px rgb(0 0 0 / 0.015);
 
   position: relative;
@@ -35,7 +34,7 @@
 .au::before { top: 0; background: linear-gradient(#0a0b10, rgba(249, 249, 251, 0)); }
 .au::after { bottom: 0; background: linear-gradient(rgba(249, 249, 251, 0), #0a0b10); }
 
-.au-inner { width: min(980px, 100% - 2.5rem); margin-inline: auto; position: relative; }
+.au-inner { width: min(920px, 100% - 2.5rem); margin-inline: auto; position: relative; }
 
 /* ── Encabezado ────────────────────────────────────────────────────────── */
 .au-head { max-width: 36rem; margin-bottom: clamp(2.4rem, 6vh, 4rem); }
@@ -43,57 +42,28 @@
 .au-title { margin-top: 1.1rem; font-size: clamp(2rem, 4.6vw, 3.1rem); font-weight: 600; line-height: 1.1; letter-spacing: -0.03em; color: var(--n900); }
 .au-title .lead { color: var(--n400); font-weight: 600; }
 .au-sub { margin-top: 1.2rem; color: var(--n500); font-size: 1.02rem; line-height: 1.55; max-width: 32rem; }
+.au-sub b { color: var(--n900); font-weight: 600; }
 
 /* ── Tarjeta base ──────────────────────────────────────────────────────── */
-.au-card {
-  background: var(--card); border: 1px solid var(--n100); border-radius: 24px;
-  box-shadow: var(--glow); padding: 2rem;
-}
-@media (min-width: 768px) { .au-card { padding: 3rem; } }
+.au-card { background: var(--card); border: 1px solid var(--n100); border-radius: 24px; box-shadow: var(--glow); padding: 2rem; }
+@media (min-width: 768px) { .au-card { padding: 2.6rem 3rem; } }
 .au-card + .au-card { margin-top: 1.5rem; }
 
-/* ── Cabecera de tarjeta: switch + contador de pendientes ──────────────── */
-.au-card-top { display: flex; align-items: center; justify-content: space-between; gap: 1.4rem; flex-wrap: wrap; }
+/* ── Escena: notificaciones (izq) + acción (der) ──────────────────────── */
+.au-scene { display: flex; align-items: center; gap: clamp(1.2rem, 4vw, 2.6rem); }
+.au-pile { position: relative; flex: 1; min-height: 250px; }
 
-.au-switch { position: relative; display: inline-flex; background: var(--n100); border-radius: 12px; padding: 4px; }
-.au-switch button {
-  position: relative; z-index: 1; appearance: none; border: 0; background: none; cursor: pointer;
-  font-family: inherit; font-size: 0.9rem; font-weight: 500; color: var(--n400);
-  padding: 0.5rem 1.15rem; border-radius: 9px; transition: color var(--dur) var(--ease);
-}
-.au-switch button.on { color: var(--n900); }
-.au-switch button:focus-visible { outline: 2px solid var(--n900); outline-offset: 2px; }
-.au-switch-thumb {
-  position: absolute; z-index: 0; top: 4px; bottom: 4px; left: 4px;
-  width: calc(50% - 4px); border-radius: 9px; background: var(--card);
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.06); transition: transform var(--dur) var(--ease);
-}
-.au-switch-thumb[data-mode='auto'] { transform: translateX(100%); }
-
-.au-count { display: flex; flex-direction: column; align-items: flex-end; line-height: 1; text-align: right; }
-.au-count-n { font-size: 2rem; font-weight: 300; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; transition: color var(--dur) var(--ease); }
-.au-count-l { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; margin-top: 0.4rem; transition: color var(--dur) var(--ease); }
-.au-card.is-manual .au-count-n, .au-card.is-manual .au-count-l { color: var(--warn); }
-.au-card.is-auto .au-count-n, .au-card.is-auto .au-count-l { color: var(--ok); }
-
-/* ── Escena: tormenta → calma (stack absoluto, sin layout-shift) ───────── */
-.au-storm { position: relative; margin-top: 1.8rem; min-height: 250px; }
-
-.au-pile { position: absolute; inset: 0; }
 .au-toast {
-  position: absolute; top: 0; left: 50%; width: min(330px, 94%);
+  position: absolute; top: 0; left: 0; width: 100%;
   opacity: 0;
-  transform: translate(calc(-50% + var(--x)), calc(var(--y) - 18px)) rotate(var(--r));
+  transform: translate(var(--x), calc(var(--ym) - 18px)) rotate(var(--r));
   transition: opacity var(--dur) var(--ease) var(--d), transform var(--dur) var(--ease) var(--d);
   will-change: transform, opacity;
 }
-/* Pile-up al entrar (manual): caen a su lugar, escalonadas */
-.au-card.entered.is-manual .au-toast {
-  opacity: 1;
-  transform: translate(calc(-50% + var(--x)), var(--y)) rotate(var(--r));
-}
-/* Colapso al pasar a automático: convergen al centro, encogen y se disuelven */
-.au-card.is-auto .au-toast { opacity: 0; transform: translate(-50%, 46px) scale(0.82); }
+/* Montón desordenado (manual, tras entrar) */
+.au-card.entered.is-manual .au-toast { opacity: 1; transform: translate(var(--x), var(--ym)) rotate(var(--r)); }
+/* Se ordenan y quedan alineadas (auto) */
+.au-card.is-auto .au-toast { opacity: 1; transform: translate(0, var(--ya)) rotate(0deg); }
 
 .au-toast-in {
   display: flex; align-items: center; gap: 0.7rem;
@@ -107,29 +77,58 @@
   50% { transform: translate(-0.5px, 0.4px); }
   75% { transform: translate(0.5px, 0.5px); }
 }
-.au-toast-ic { flex: none; width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; background: var(--warn-soft); color: var(--warn); }
-.au-toast-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.au-toast-tx .tt { font-size: 0.9rem; font-weight: 500; color: #2b2b2f; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.au-toast-tx .ts { font-size: 0.75rem; font-weight: 500; color: var(--warn); margin-top: 1px; }
-.au-toast-dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--warn); box-shadow: 0 0 0 4px var(--warn-soft); }
 
-.au-calm {
-  position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
-  text-align: center; gap: 0.55rem; pointer-events: none;
-  opacity: 0; transform: scale(0.96); transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
-}
-.au-card.is-auto .au-calm { opacity: 1; transform: scale(1); }
-.au-calm-ic { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; background: var(--ok-soft); color: var(--ok); }
-.au-card.is-auto .au-calm-ic { animation: au-breathe 4.2s ease-in-out infinite; }
-@keyframes au-breathe {
-  0%, 100% { box-shadow: 0 0 0 8px rgba(31, 157, 85, 0.07); }
-  50% { box-shadow: 0 0 0 15px rgba(31, 157, 85, 0); }
-}
-.au-calm-t { font-size: 1.15rem; font-weight: 600; letter-spacing: -0.02em; color: var(--n900); }
-.au-calm-s { font-size: 0.9rem; color: var(--n500); max-width: 26rem; line-height: 1.5; }
+.au-toast-ic { flex: none; width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; background: var(--warn-soft); color: var(--warn); transition: background var(--dur) var(--ease), color var(--dur) var(--ease); }
+.au-card.is-auto .au-toast-ic { background: var(--ok-soft); color: var(--ok); }
 
-/* ── Calculadora (números finos Satoshi, sliders sólidos como antes) ───── */
-.au-save-grid { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: clamp(1.8rem, 6vw, 4.5rem); align-items: center; }
+.au-toast-tx { position: relative; flex: 1; min-width: 0; min-height: 2.5em; }
+.au-toast-tx .s { position: absolute; inset-inline: 0; top: 50%; display: flex; flex-direction: column; transform: translateY(-50%); transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease); }
+.au-toast-tx .tt { font-size: 0.9rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.au-toast-tx .ts { font-size: 0.75rem; font-weight: 500; margin-top: 1px; }
+.au-toast-tx .s.bad .tt { color: #2b2b2f; }
+.au-toast-tx .s.bad .ts { color: var(--warn); }
+.au-toast-tx .s.ok .tt { color: var(--n900); }
+.au-toast-tx .s.ok .ts { color: var(--ok); }
+.au-card.is-manual .au-toast-tx .s.ok { opacity: 0; transform: translateY(calc(-50% + 6px)); }
+.au-card.is-auto .au-toast-tx .s.bad { opacity: 0; transform: translateY(calc(-50% - 6px)); }
+
+.au-toast-dot { flex: none; width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; transition: background var(--dur) var(--ease), color var(--dur) var(--ease), box-shadow var(--dur) var(--ease); }
+.au-card.is-manual .au-toast-dot { background: var(--warn); color: transparent; box-shadow: 0 0 0 4px var(--warn-soft); }
+.au-card.is-auto .au-toast-dot { background: var(--ok); color: #fff; box-shadow: 0 0 0 4px var(--ok-soft); }
+.au-toast-dot svg { transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease); }
+.au-card.is-manual .au-toast-dot svg { opacity: 0; transform: scale(0.4); }
+.au-card.is-auto .au-toast-dot svg { opacity: 1; transform: scale(1); }
+
+/* Panel de acción (derecha) */
+.au-action { flex: none; width: clamp(150px, 28%, 200px); display: flex; flex-direction: column; align-items: flex-start; gap: 1.2rem; }
+.au-count { display: flex; flex-direction: column; line-height: 1; }
+.au-count-n { font-size: 2.7rem; font-weight: 300; font-variant-numeric: tabular-nums; letter-spacing: -0.03em; transition: color var(--dur) var(--ease); }
+.au-count-l { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; margin-top: 0.4rem; transition: color var(--dur) var(--ease); }
+.au-card.is-manual .au-count-n, .au-card.is-manual .au-count-l { color: var(--warn); }
+.au-card.is-auto .au-count-n, .au-card.is-auto .au-count-l { color: var(--ok); }
+
+.au-automate {
+  appearance: none; border: 0; cursor: pointer; width: 100%;
+  font-family: inherit; font-size: 0.92rem; font-weight: 600; color: #fff; background: var(--n900);
+  padding: 0.85rem 1.3rem; border-radius: 12px; box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
+  transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+.au-automate:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgb(0 0 0 / 0.14); }
+.au-automate:focus-visible { outline: 2px solid var(--n900); outline-offset: 3px; }
+.au-automate.invite { animation: au-pulse 1.9s var(--ease) infinite; }
+@keyframes au-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(23, 23, 23, 0.16); }
+  50% { box-shadow: 0 0 0 9px rgba(23, 23, 23, 0); }
+}
+
+.au-done { display: flex; flex-direction: column; align-items: flex-start; gap: 0.6rem; }
+.au-done-tag { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.9rem; font-weight: 600; color: var(--ok); background: var(--ok-soft); padding: 0.5rem 0.8rem; border-radius: 10px; }
+.au-reset { appearance: none; border: 0; background: none; cursor: pointer; font-family: inherit; font-size: 0.85rem; font-weight: 600; color: var(--n400); padding: 0; transition: color var(--dur) var(--ease); }
+.au-reset:hover { color: var(--n900); }
+.au-reset:focus-visible { outline: 2px solid var(--n900); outline-offset: 2px; }
+
+/* ── Calculadora: mes / año / 5 años ───────────────────────────────────── */
+.au-save-grid { display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); gap: clamp(1.8rem, 6vw, 4.5rem); align-items: center; }
 .au-controls { display: flex; flex-direction: column; gap: 2rem; }
 .au-control .row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.85rem; }
 .au-control .row .k { font-size: 0.95rem; font-weight: 500; color: var(--n900); }
@@ -142,12 +141,12 @@
   -webkit-appearance: none; appearance: none; margin-top: -8px;
   width: 19px; height: 19px; border-radius: 50%;
   background: var(--n900); border: 3px solid var(--card); box-shadow: 0 1px 3px rgb(0 0 0 / 0.12);
-  transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+  transition: transform var(--dur) var(--ease);
 }
 .au-range::-moz-range-thumb {
   width: 19px; height: 19px; border-radius: 50%;
   background: var(--n900); border: 3px solid var(--card); box-shadow: 0 1px 3px rgb(0 0 0 / 0.12);
-  transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+  transition: transform var(--dur) var(--ease);
 }
 .au-range:hover::-webkit-slider-thumb, .au-range:active::-webkit-slider-thumb { transform: scale(1.1); }
 .au-range:hover::-moz-range-thumb, .au-range:active::-moz-range-thumb { transform: scale(1.1); }
@@ -155,26 +154,30 @@
 .au-range:focus-visible::-webkit-slider-thumb { outline: 2px solid var(--n900); outline-offset: 2px; }
 .au-range:focus-visible::-moz-range-thumb { outline: 2px solid var(--n900); outline-offset: 2px; }
 
-.au-result { border-left: 1px solid var(--n100); padding-left: clamp(1.8rem, 5vw, 4rem); }
-.au-result .pre { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--n400); margin-bottom: 0.7rem; }
-.au-figure { display: flex; align-items: baseline; gap: 0.5rem; line-height: 0.95; }
-.au-figure .n { font-variant-numeric: tabular-nums; font-size: clamp(3.6rem, 12vw, 7rem); font-weight: 200; letter-spacing: -0.04em; color: var(--n900); }
-.au-figure .u { font-size: clamp(1rem, 2.6vw, 1.4rem); font-weight: 300; color: var(--n400); }
-.au-result .ctx { margin-top: 0.9rem; font-size: 1.02rem; line-height: 1.5; color: var(--n500); max-width: 24rem; }
+.au-result .pre { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--n400); margin-bottom: 1rem; }
+.au-figs { display: flex; flex-direction: column; gap: 0.55rem; }
+.fig { display: flex; align-items: baseline; gap: 0.4rem; }
+.fig .fn { font-variant-numeric: tabular-nums; font-size: clamp(2.2rem, 6vw, 3.2rem); font-weight: 200; letter-spacing: -0.04em; color: var(--n900); line-height: 1.02; }
+.fig .fu { font-size: 0.95rem; font-weight: 300; color: var(--n400); }
+.fig .fl { margin-left: 0.55rem; font-size: 0.85rem; color: var(--n500); }
+.fig.hero .fn { font-size: clamp(2.8rem, 8vw, 4.4rem); }
+.fig.hero .fl { color: var(--n900); font-weight: 600; }
+.au-result .ctx { margin-top: 1.1rem; font-size: 1rem; line-height: 1.5; color: var(--n500); max-width: 26rem; }
 .au-result .ctx b { color: var(--n900); font-weight: 600; }
 
 @media (prefers-reduced-motion: reduce) {
-  .au-card.is-manual .au-toast-in, .au-card.is-auto .au-calm-ic { animation: none; }
+  .au-card.is-manual .au-toast-in { animation: none; }
+  .au-automate.invite { animation: none; }
   .au *, .au *::before, .au *::after { transition: none !important; }
 }
 
 /* ── Responsive ────────────────────────────────────────────────────────── */
+@media (max-width: 680px) {
+  .au-scene { flex-direction: column; align-items: stretch; gap: 1.6rem; }
+  .au-action { width: 100%; flex-direction: row; align-items: center; justify-content: space-between; gap: 1rem; }
+  .au-automate { width: auto; }
+  .au-done { flex-direction: row; align-items: center; gap: 0.9rem; }
+}
 @media (max-width: 760px) {
-  .au-card-top { flex-direction: column; align-items: stretch; }
-  .au-switch { align-self: flex-start; }
-  .au-count { flex-direction: row; align-items: baseline; gap: 0.5rem; text-align: left; }
-  .au-count-l { margin-top: 0; }
-  .au-storm { min-height: 262px; }
   .au-save-grid { grid-template-columns: 1fr; gap: 2.4rem; }
-  .au-result { border-left: 0; padding-left: 0; border-top: 1px solid var(--n100); padding-top: 2rem; }
 }

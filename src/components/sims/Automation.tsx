@@ -5,21 +5,19 @@ const prefersReducedMotion = (): boolean =>
   typeof window !== 'undefined' &&
   window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-// COPY — editable. Notificaciones que se acumulan en el modo manual.
+// COPY — editable. Cada notificación tiene su versión "a mano" y su versión resuelta.
 const TOASTS = [
-  { icon: 'msg', t: 'Carla — ¿tenés lugar mañana a la tarde?', s: 'sin responder · 2 h' },
-  { icon: 'cal', t: 'Turno superpuesto a las 15:00', s: 'se pisa con otro' },
-  { icon: 'alert', t: 'Diego no confirmó el turno del jueves', s: 'sin confirmar' },
-  { icon: 'bell', t: '3 recordatorios sin enviar', s: 'vencen hoy' },
-  { icon: 'phone', t: 'Llamada perdida — número nuevo', s: 'sin devolver' },
+  { icon: 'msg', bad: 'Carla pregunta si hay lugar', badS: 'sin responder · 2 h', ok: 'Disponibilidad respondida', okS: 'al instante' },
+  { icon: 'bell', bad: '3 recordatorios sin enviar', badS: 'vencen hoy', ok: 'Recordatorios enviados', okS: '3 hoy' },
+  { icon: 'cal', bad: '2 turnos sin confirmar', badS: 'sin respuesta', ok: 'Mensaje enviado a los sin confirmar', okS: 'esperando ok' },
+  { icon: 'phone', bad: 'Llamada perdida · número nuevo', badS: 'sin devolver', ok: 'Llamada devuelta · contactado', okS: 'hecho' },
 ];
-// Posición de reposo de cada toast en el "montón" (x, y en px, rotación en deg)
+// Posición en el montón (manual) y alineada (auto)
 const POS = [
-  { x: -10, y: 0, r: -3.5 },
-  { x: 16, y: 40, r: 2.5 },
-  { x: -20, y: 80, r: -2 },
-  { x: 12, y: 120, r: 3 },
-  { x: -4, y: 160, r: -1.5 },
+  { x: -8, ym: 0, r: -3, ya: 0 },
+  { x: 10, ym: 44, r: 2.5, ya: 64 },
+  { x: -12, ym: 88, r: -2, ya: 128 },
+  { x: 6, ym: 132, r: 3, ya: 192 },
 ];
 const PENDING = 14;
 
@@ -31,8 +29,6 @@ const Icon = ({ t }: { t: string }) => {
   switch (t) {
     case 'cal':
       return (<svg viewBox="0 0 20 20" width="16" height="16"><rect x="3" y="4.5" width="14" height="12" rx="2" {...p} /><path d="M3 8h14M7 3v3M13 3v3" {...p} /></svg>);
-    case 'alert':
-      return (<svg viewBox="0 0 20 20" width="16" height="16"><path d="M10 3.5 18 16.5H2z" {...p} /><path d="M10 8.5v3.5M10 14.3v.2" {...p} /></svg>);
     case 'bell':
       return (<svg viewBox="0 0 20 20" width="16" height="16"><path d="M5.5 8a4.5 4.5 0 0 1 9 0c0 4 1.5 5 1.5 5H4s1.5-1 1.5-5Z" {...p} /><path d="M8.5 16a1.5 1.5 0 0 0 3 0" {...p} /></svg>);
     case 'phone':
@@ -42,21 +38,22 @@ const Icon = ({ t }: { t: string }) => {
   }
 };
 
-const Check = () => (
-  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12.5 10 17 19 7" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+const Check = ({ w = 12 }: { w?: number }) => (
+  <svg viewBox="0 0 24 24" width={w} height={w} fill="none" aria-hidden="true"><path d="M5 12.5 10 17 19 7" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
 );
 
 export default function Automation() {
   const reduced = typeof window !== 'undefined' && prefersReducedMotion();
   const root = useRef<HTMLElement>(null);
 
-  const [mode, setMode] = useState<'manual' | 'auto'>(reduced ? 'auto' : 'manual');
+  const [automated, setAutomated] = useState(reduced);
   const [entered, setEntered] = useState(reduced);
   const userTouched = useRef(false);
 
-  const go = (m: 'manual' | 'auto') => { userTouched.current = true; setMode(m); };
+  const automate = () => { userTouched.current = true; setAutomated(true); };
+  const reset = () => { userTouched.current = true; setAutomated(false); };
 
-  // Reveal pasivo: entra en Manual (tormenta) y, si no tocás nada, colapsa solo a la paz.
+  // Reveal pasivo: entra con la tormenta y, si no tocás nada, se automatiza solo.
   useEffect(() => {
     if (reduced || !root.current) return;
     const el = root.current;
@@ -65,7 +62,7 @@ export default function Automation() {
       ([entry]) => {
         if (entry.isIntersecting) {
           setEntered(true);
-          t = setTimeout(() => { if (!userTouched.current) setMode('auto'); }, 1800);
+          t = setTimeout(() => { if (!userTouched.current) setAutomated(true); }, 2200);
           io.disconnect();
         }
       },
@@ -75,15 +72,20 @@ export default function Automation() {
     return () => { io.disconnect(); clearTimeout(t); };
   }, [reduced]);
 
-  // Calculadora
+  // Calculadora — mismo cálculo en tres horizontes
   const [turnos, setTurnos] = useState(40);
   const [minutos, setMinutos] = useState(10);
-  const hours = useMemo(() => Math.round((turnos * WEEKS_PER_MONTH * minutos) / 60), [turnos, minutos]);
-  const days = useMemo(() => Math.max(1, Math.round(hours / WORKDAY_H)), [hours]);
-  const shownHours = useTicker(hours, reduced);
+  const perMonth = useMemo(() => Math.round((turnos * WEEKS_PER_MONTH * minutos) / 60), [turnos, minutos]);
+  const perYear = useMemo(() => Math.round((turnos * 52 * minutos) / 60), [turnos, minutos]);
+  const per5 = useMemo(() => perYear * 5, [perYear]);
+  const days5 = useMemo(() => Math.round(per5 / WORKDAY_H), [per5]);
 
-  const isAuto = mode === 'auto';
-  const pending = useTicker(isAuto ? 0 : PENDING, reduced);
+  const month = useTicker(perMonth, reduced);
+  const year = useTicker(perYear, reduced);
+  const five = useTicker(per5, reduced);
+  const pending = useTicker(automated ? 0 : PENDING, reduced);
+
+  const stateClass = automated ? 'is-auto' : 'is-manual';
 
   return (
     <section id="automatizacion" className="au" ref={root}>
@@ -94,54 +96,52 @@ export default function Automation() {
             <span className="lead">Un día cualquiera del negocio,</span> con y sin el sistema andando.
           </h2>
           <p className="au-sub">
-            Movés el interruptor y ves el mismo día de dos maneras: el que te llueve encima
-            y el que se resuelve solo, en silencio.
+            A la izquierda, todo lo que se te acumula en el día. Tocá <b>Automatizar</b> y mirá
+            cómo se resuelve solo, en silencio.
           </p>
         </header>
 
-        <div className={`au-card ${isAuto ? 'is-auto' : 'is-manual'}${entered ? ' entered' : ''}`}>
-          <div className="au-card-top">
-            <div className="au-switch" role="group" aria-label="Modo de operación">
-              <button className={!isAuto ? 'on' : ''} aria-pressed={!isAuto} onClick={() => go('manual')}>Manual</button>
-              <button className={isAuto ? 'on' : ''} aria-pressed={isAuto} onClick={() => go('auto')}>Automatizado</button>
-              <span className="au-switch-thumb" data-mode={mode} aria-hidden="true" />
-            </div>
-
-            <div className="au-count" aria-live="polite">
-              <span className="au-count-n">{pending}</span>
-              <span className="au-count-l">{isAuto ? 'al día' : 'pendientes'}</span>
-            </div>
-          </div>
-
-          <div className="au-storm">
-            <div className="au-pile" aria-hidden={isAuto}>
+        <div className={`au-card ${stateClass}${entered ? ' entered' : ''}`}>
+          <div className="au-scene">
+            {/* Notificaciones */}
+            <div className="au-pile" aria-hidden="true">
               {TOASTS.map((t, i) => (
                 <div
-                  key={t.t}
+                  key={t.bad}
                   className="au-toast"
-                  style={{ '--x': `${POS[i].x}px`, '--y': `${POS[i].y}px`, '--r': `${POS[i].r}deg`, '--d': `${i * 70}ms` } as CSSProperties}
+                  style={{ '--x': `${POS[i].x}px`, '--ym': `${POS[i].ym}px`, '--ya': `${POS[i].ya}px`, '--r': `${POS[i].r}deg`, '--d': `${i * 70}ms` } as CSSProperties}
                 >
                   <div className="au-toast-in" style={{ animationDelay: `${i * 0.4}s` } as CSSProperties}>
                     <span className="au-toast-ic"><Icon t={t.icon} /></span>
                     <span className="au-toast-tx">
-                      <span className="tt">{t.t}</span>
-                      <span className="ts">{t.s}</span>
+                      <span className="s bad"><span className="tt">{t.bad}</span><span className="ts">{t.badS}</span></span>
+                      <span className="s ok"><span className="tt">{t.ok}</span><span className="ts">{t.okS}</span></span>
                     </span>
-                    <span className="au-toast-dot" />
+                    <span className="au-toast-dot"><Check w={10} /></span>
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="au-calm" aria-hidden={!isAuto}>
-              <span className="au-calm-ic"><Check /></span>
-              <p className="au-calm-t">Todo al día · 0 pendientes</p>
-              <p className="au-calm-s">Respondió, ordenó la agenda y mandó los recordatorios por vos.</p>
+            {/* Panel de acción */}
+            <div className="au-action">
+              <div className="au-count" aria-live="polite">
+                <span className="au-count-n">{pending}</span>
+                <span className="au-count-l">{automated ? 'al día' : 'pendientes'}</span>
+              </div>
+              {automated ? (
+                <div className="au-done">
+                  <span className="au-done-tag"><Check w={13} /> Automatizado</span>
+                  <button className="au-reset" onClick={reset}>Verlo de nuevo</button>
+                </div>
+              ) : (
+                <button className={`au-automate${entered ? ' invite' : ''}`} onClick={automate}>Automatizar</button>
+              )}
             </div>
           </div>
         </div>
 
-        {/* ── Resumen de ahorro (tarjeta aparte) ── */}
+        {/* ── Resumen de ahorro: mes / año / 5 años ── */}
         <div className="au-card">
           <div className="au-save-grid">
             <div className="au-controls">
@@ -170,12 +170,25 @@ export default function Automation() {
             </div>
 
             <div className="au-result">
-              <p className="pre">Lo que dejás de hacer a mano cada mes</p>
-              <p className="au-figure">
-                <span className="n">{shownHours.toLocaleString('es-UY')}</span>
-                <span className="u">horas libres</span>
-              </p>
-              <p className="ctx">Equivalen a <b>≈ {days} {days === 1 ? 'día entero' : 'días enteros'} de trabajo</b> recuperados para vos.</p>
+              <p className="pre">Lo que dejás de hacer a mano</p>
+              <div className="au-figs">
+                <div className="fig">
+                  <span className="fn">{month.toLocaleString('es-UY')}</span>
+                  <span className="fu">h</span>
+                  <span className="fl">al mes</span>
+                </div>
+                <div className="fig">
+                  <span className="fn">{year.toLocaleString('es-UY')}</span>
+                  <span className="fu">h</span>
+                  <span className="fl">al año</span>
+                </div>
+                <div className="fig hero">
+                  <span className="fn">{five.toLocaleString('es-UY')}</span>
+                  <span className="fu">h</span>
+                  <span className="fl">en 5 años</span>
+                </div>
+              </div>
+              <p className="ctx">En 5 años son <b>≈ {days5.toLocaleString('es-UY')} jornadas</b> de 8 horas recuperadas para vos.</p>
             </div>
           </div>
         </div>
