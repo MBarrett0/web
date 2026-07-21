@@ -1,0 +1,39 @@
+/* Tailwind v4 — SOLO utilidades.
+   El preflight queda deliberadamente afuera: las 12 secciones existentes ya
+   tienen su reset y sus estilos de elemento en global.css, y el reset de
+   Tailwind los pisaría (h2/h3 perderían tamaño, .btn su padding, etc.).
+   Las utilidades se importan SIN @layer a propósito: una regla en capa pierde
+   siempre contra una regla sin capa, así que dentro de una capa `font-black`
+   no le podría ganar al `h1 { font-weight: 700 }` de global.css. Sin capa,
+   gana la cascada normal (clase > elemento) y todo se comporta como se espera. */
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css';
+
+@source '../**/*.{astro,tsx,ts}';
+
+/* Los tokens de marca siguen viviendo en :root dentro de global.css.
+   Acá sólo se exponen como utilidades (bg-bg, text-ink, border-line…).
+   `inline` hace que Tailwind escriba var(--accent) en la utilidad en vez de
+   copiar el valor: cambiar el token en global.css sigue alcanzando. */
+/* Tailwind emite su propia utilidad `.container` (width:100% + max-width por
+   breakpoint). Al ir sin capa y DESPUÉS de global.css, le ganaba por orden de
+   fuente a la del proyecto y se llevaba puestas las 12 secciones: sin márgenes
+   laterales en móvil y con el ancho máximo bajado de 1120px a 1024px.
+   Acá se restaura la definición del proyecto. `max-width:none` es necesario:
+   las variantes de breakpoint de Tailwind sólo tocan max-width. */
+.container {
+  width: min(1120px, 100% - 2.5rem);
+  max-width: none;
+  margin-inline: auto;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-line: var(--line);
+  --color-ink: var(--text);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-2: var(--accent-2);
+  --font-sans: var(--font);
+}
